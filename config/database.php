@@ -26,15 +26,17 @@ class Database
             $this->dbname = ltrim($parsed['path'] ?? '/tourism_db', '/');
             $this->username = $parsed['user'] ?? 'root';
             $this->password = $parsed['pass'] ?? '';
+            $port = $parsed['port'] ?? '3306';
         } else {
             $this->host = getenv('DB_HOST') ?: 'localhost';
             $this->dbname = getenv('DB_NAME') ?: 'tourism_db';
             $this->username = getenv('DB_USER') ?: 'root';
             $this->password = getenv('DB_PASS') ?: '';
+            $port = getenv('DB_PORT') ?: '3306';
         }
 
         try {
-            $dsn = "mysql:host={$this->host};dbname={$this->dbname};charset=utf8mb4";
+            $dsn = "mysql:host={$this->host};port={$port};dbname={$this->dbname};charset=utf8mb4";
             $options = [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -44,7 +46,7 @@ class Database
             $this->connection = new PDO($dsn, $this->username, $this->password, $options);
         } catch (PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
-            die("Database connection failed. Please check your configuration.");
+            die("Database connection failed: " . $e->getMessage());
         }
     }
 
