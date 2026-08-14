@@ -1,0 +1,19 @@
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug files
+test_debug*.php
+
+# Composer (if added later)
+vendor/
+
+# Session / temp files
+*.log

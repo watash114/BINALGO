@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: binalgo-tourism
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: binalgo-db
+          property: host
+      - key: DB_NAME
+        fromDatabase:
+          name: binalgo-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: binalgo-db
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: binalgo-db
+          property: password
+      - key: BASE_URL
+        value: /
+    healthCheckPath: /
+
+databases:
+  - name: binalgo-db
+    plan: free
+    databaseName: tourism_db
+    ipAllowList: []
