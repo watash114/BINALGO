@@ -1,7 +1,8 @@
 <?php
 
 define('BASE_PATH', dirname(__DIR__));
-define('BASE_URL', getenv('BASE_URL') ?: '/');
+$baseUrl = getenv('BASE_URL') ?: '';
+define('BASE_URL', rtrim($baseUrl, '/'));
 
 if (date_default_timezone_get() === 'UTC') {
     date_default_timezone_set('Asia/Manila');
