@@ -106,8 +106,11 @@ CREATE TABLE IF NOT EXISTS destination_reviews (
     destination_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    review TEXT NULL,
     comment TEXT NULL,
+    is_hidden INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME,
     FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -138,7 +141,7 @@ CREATE TABLE IF NOT EXISTS events (
     organizer VARCHAR(200),
     contact_info VARCHAR(255),
     image VARCHAR(500) NULL,
-    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','cancelled','completed')),
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','cancelled','completed','published','draft')),
     created_by INTEGER NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -271,7 +274,7 @@ CREATE TABLE IF NOT EXISTS user_message_settings (
     user_id INTEGER NOT NULL UNIQUE,
     who_can_message VARCHAR(50) DEFAULT 'everyone',
     blocked_users TEXT DEFAULT '[]',
-    show_online INTEGER DEFAULT 1,
+    show_online_status INTEGER DEFAULT 1,
     allow_messages VARCHAR(50) DEFAULT 'everyone',
     show_read_receipts INTEGER DEFAULT 1,
     message_notifications INTEGER DEFAULT 1,
@@ -359,6 +362,16 @@ CREATE TABLE IF NOT EXISTS message_settings (
     show_online INTEGER NOT NULL DEFAULT 1,
     allow_messages TEXT NOT NULL DEFAULT 'everyone' CHECK (allow_messages IN ('everyone','contacts','none')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS dest_bookmarks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    destination_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(destination_id, user_id)
 );
 
 -- Admin account (password: admin123)

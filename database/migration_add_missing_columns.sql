@@ -73,6 +73,7 @@ ALTER TABLE calls ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP;
 -- 6. user_message_settings table — add 4 columns
 -- ============================================================
 ALTER TABLE user_message_settings ADD COLUMN show_read_receipts INTEGER DEFAULT 1;
+ALTER TABLE user_message_settings ADD COLUMN show_online_status INTEGER DEFAULT 1;
 ALTER TABLE user_message_settings ADD COLUMN message_notifications INTEGER DEFAULT 1;
 ALTER TABLE user_message_settings ADD COLUMN sound_notifications INTEGER DEFAULT 1;
 ALTER TABLE user_message_settings ADD COLUMN message_preview INTEGER DEFAULT 1;
@@ -116,3 +117,29 @@ ALTER TABLE destination_seasons ADD COLUMN created_at DATETIME DEFAULT CURRENT_T
 -- INSERT INTO calls_new SELECT * FROM calls;
 -- DROP TABLE calls;
 -- ALTER TABLE calls_new RENAME TO calls;
+
+-- ============================================================
+-- 11. destination_reviews — add missing columns
+-- ============================================================
+ALTER TABLE destination_reviews ADD COLUMN is_hidden INTEGER DEFAULT 0;
+ALTER TABLE destination_reviews ADD COLUMN updated_at DATETIME;
+ALTER TABLE destination_reviews ADD COLUMN review TEXT;
+
+-- ============================================================
+-- 12. Create dest_bookmarks table
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dest_bookmarks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    destination_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(destination_id, user_id)
+);
+
+-- ============================================================
+-- 13. Rename destination_reviews.comment to review (if exists)
+-- ============================================================
+-- SQLite doesn't support RENAME COLUMN in all versions, 
+-- so we add 'review' column and PHP uses both

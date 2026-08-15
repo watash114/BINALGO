@@ -76,22 +76,33 @@ class Database
             $line = trim($line);
             if ($line === '' || str_starts_with($line, '--')) continue;
             $pending .= ' ' . $line;
-            if (str_ends_with($line, ';')) {
-                $pending = trim($pending);
-                if (preg_match('/ALTER TABLE (\w+) ADD COLUMN (\w+)/i', $pending, $m)) {
-                    $table = $m[1];
-                    $col = $m[2];
-                    if (!isset($existingCols[$table]) || !in_array($col, $existingCols[$table])) {
-                        try {
-                            $this->connection->exec($pending);
-                            $existingCols[$table][] = $col;
-                        } catch (PDOException $e) {
-                            error_log("Migration skip: {$table}.{$col} - " . $e->getMessage());
+                if (str_ends_with($line, ';')) {
+                    $pending = trim($pending);
+                    if (preg_match('/ALTER TABLE (\w+) ADD COLUMN (\w+)/i', $pending, $m)) {
+                        $table = $m[1];
+                        $col = $m[2];
+                        if (!isset($existingCols[$table]) || !in_array($col, $existingCols[$table])) {
+                            try {
+                                $this->connection->exec($pending);
+                                $existingCols[$table][] = $col;
+                            } catch (PDOException $e) {
+                                error_log("Migration skip: {$table}.{$col} - " . $e->getMessage());
+                            }
+                        }
+                    } elseif (preg_match('/CREATE TABLE IF NOT EXISTS (\w+)/i', $pending, $m)) {
+                        $table = $m[1];
+                        if (!in_array($table, $tables)) {
+                            try {
+                                $this->connection->exec($pending);
+                                $tables[] = $table;
+                                $existingCols[$table] = [];
+                            } catch (PDOException $e) {
+                                error_log("Migration skip create table: {$table} - " . $e->getMessage());
+                            }
                         }
                     }
+                    $pending = '';
                 }
-                $pending = '';
-            }
         }
     }
 
