@@ -45,8 +45,12 @@ class Database
                 $this->connection->exec("PRAGMA foreign_keys=ON");
 
                 if ($isNew) {
-                    $this->initSQLite();
+                    $sql = file_get_contents(BASE_PATH . '/database/tourism_sqlite.sql');
+                    if ($sql) {
+                        $this->connection->exec($sql);
+                    }
                 }
+                $this->migrate();
             }
         } catch (PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
@@ -54,79 +58,41 @@ class Database
         }
     }
 
-    private function initSQLite(): void
-    {
-        $sql = file_get_contents(BASE_PATH . '/database/tourism_sqlite.sql');
-        if ($sql) {
-            $this->connection->exec($sql);
-        }
-        $this->migrate();
-    }
-
     private function migrate(): void
     {
-        $cols = function (string $table): array {
-            $rows = $this->connection->query("PRAGMA table_info({$table})")->fetchAll();
-            return array_column($rows, 'name');
-        };
+        $migFile = BASE_PATH . '/database/migration_add_missing_columns.sql';
+        if (!file_exists($migFile)) return;
 
-        $addCol = function (string $table, string $col, string $type) use ($cols) {
-            if (!in_array($col, $cols($table))) {
-                $this->connection->exec("ALTER TABLE {$table} ADD COLUMN {$col} {$type}");
+        $tables = $this->connection->query("SELECT name FROM sqlite_master WHERE type='table'")->fetchAll(PDO::FETCH_COLUMN);
+        $existingCols = [];
+        foreach ($tables as $t) {
+            $rows = $this->connection->query("PRAGMA table_info(\"{$t}\")")->fetchAll();
+            $existingCols[$t] = array_column($rows, 'name');
+        }
+
+        $lines = file($migFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $pending = '';
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '--')) continue;
+            $pending .= ' ' . $line;
+            if (str_ends_with($line, ';')) {
+                $pending = trim($pending);
+                if (preg_match('/ALTER TABLE (\w+) ADD COLUMN (\w+)/i', $pending, $m)) {
+                    $table = $m[1];
+                    $col = $m[2];
+                    if (!isset($existingCols[$table]) || !in_array($col, $existingCols[$table])) {
+                        try {
+                            $this->connection->exec($pending);
+                            $existingCols[$table][] = $col;
+                        } catch (PDOException $e) {
+                            error_log("Migration skip: {$table}.{$col} - " . $e->getMessage());
+                        }
+                    }
+                }
+                $pending = '';
             }
-        };
-
-        $addCol('payments', 'tourist_id', 'INTEGER');
-        $addCol('payments', 'tax', 'REAL DEFAULT 0');
-        $addCol('payments', 'service_fee', 'REAL DEFAULT 0');
-        $addCol('payments', 'total_amount', 'REAL DEFAULT 0');
-        $addCol('payments', 'payment_method', "VARCHAR(50) DEFAULT 'card'");
-        $addCol('payments', 'card_last_four', 'VARCHAR(4)');
-        $addCol('payments', 'card_brand', 'VARCHAR(50)');
-        $addCol('payments', 'reference_number', 'VARCHAR(100)');
-        $addCol('payments', 'transaction_id', 'VARCHAR(255)');
-        $addCol('payments', 'payment_status', "VARCHAR(20) DEFAULT 'pending'");
-        $addCol('payments', 'payment_date', 'DATETIME');
-
-        $addCol('bookings', 'destination_id', 'INTEGER');
-        $addCol('bookings', 'guide_id', 'INTEGER');
-        $addCol('bookings', 'visit_date', 'DATE');
-        $addCol('bookings', 'payment_status', "VARCHAR(20) DEFAULT 'pending'");
-
-        $addCol('events', 'event_start_date', 'DATE');
-        $addCol('events', 'event_start_time', 'TIME');
-        $addCol('events', 'event_end_date', 'DATE');
-        $addCol('events', 'event_end_time', 'TIME');
-        $addCol('events', 'image', 'VARCHAR(500)');
-
-        $addCol('notifications', 'priority', "VARCHAR(20) DEFAULT 'normal'");
-        $addCol('notifications', 'scheduled_at', 'DATETIME');
-        $addCol('notifications', 'status', "VARCHAR(20) DEFAULT 'sent'");
-        $addCol('notifications', 'audience', "VARCHAR(50) DEFAULT 'user'");
-        $addCol('notifications', 'recipient_count', 'INTEGER DEFAULT 1');
-        $addCol('notifications', 'batch_id', 'VARCHAR(100)');
-
-        $addCol('guide_payouts', 'booking_id', 'INTEGER');
-        $addCol('guide_payouts', 'payment_id', 'INTEGER');
-        $addCol('guide_payouts', 'commission_amount', 'REAL DEFAULT 0');
-        $addCol('guide_payouts', 'net_earning', 'REAL DEFAULT 0');
-        $addCol('guide_payouts', 'payout_status', "VARCHAR(20) DEFAULT 'pending'");
-        $addCol('guide_payouts', 'reference_number', 'VARCHAR(100)');
-        $addCol('guide_payouts', 'approved_by', 'INTEGER');
-        $addCol('guide_payouts', 'approved_at', 'DATETIME');
-        $addCol('guide_payouts', 'paid_at', 'DATETIME');
-
-        $addCol('calls', 'caller_id', 'INTEGER');
-        $addCol('calls', 'receiver_id', 'INTEGER');
-        $addCol('calls', 'status', "VARCHAR(20) DEFAULT 'ringing'");
-        $addCol('calls', 'started_at', 'DATETIME');
-        $addCol('calls', 'ended_at', 'DATETIME');
-        $addCol('calls', 'duration', 'INTEGER DEFAULT 0');
-
-        $addCol('message_settings', 'who_can_message', "VARCHAR(50) DEFAULT 'everyone'");
-        $addCol('message_settings', 'blocked_users', "TEXT DEFAULT '[]'");
-        $addCol('message_settings', 'show_online', 'INTEGER DEFAULT 1');
-        $addCol('message_settings', 'allow_messages', "VARCHAR(50) DEFAULT 'everyone'");
+        }
     }
 
     public static function getInstance(): self
