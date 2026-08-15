@@ -243,3 +243,83 @@ function has_pending_verification(int $user_id): bool
     $stmt->execute([':user_id' => $user_id]);
     return $stmt->fetch() !== false;
 }
+
+function oauth_login(string $provider, string $oauth_id, string $email, string $name, string $avatar = ''): array
+{
+    $db = Database::getInstance()->getConnection();
+    $userModel = new User();
+
+    $existing = $userModel->findByEmail($email);
+    if ($existing) {
+        if ($existing['status'] !== 'active') {
+            return ['success' => false, 'message' => 'Your account is ' . $existing['status'] . '.'];
+        }
+        $db->prepare("UPDATE users SET oauth_provider = :provider, oauth_id = :oid, avatar = COALESCE(:avatar, avatar) WHERE id = :uid")
+            ->execute([':provider' => $provider, ':oid' => $oauth_id, ':avatar' => $avatar ?: null, ':uid' => $existing['id']]);
+
+        start_session();
+        $_SESSION['user_id'] = $existing['id'];
+        $_SESSION['role'] = $existing['role'];
+        $_SESSION['name'] = $existing['name'];
+        $_SESSION['email'] = $existing['email'];
+        session_regenerate_id(true);
+
+        $login_ip = get_user_ip();
+        $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        try {
+            $db->prepare("UPDATE users SET last_login_ip = :ip, last_active_ip = :ip2, last_login_at = datetime('now'), login_count = login_count + 1, last_user_agent = :ua WHERE id = :uid")
+                ->execute([':ip' => $login_ip, ':ip2' => $login_ip, ':ua' => $ua, ':uid' => $existing['id']]);
+        } catch (\PDOException $e) {
+            error_log("OAuth login audit update failed: " . $e->getMessage());
+        }
+        ActivityLog::log($existing['id'], 'login', "Logged in via {$provider} OAuth from {$login_ip}");
+        return ['success' => true, 'user' => $existing];
+    }
+
+    $username = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', explode('@', $email)[0]));
+    $hashed = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+    $user_data = [
+        'username'   => $username,
+        'name'       => $name,
+        'email'      => $email,
+        'password'   => $hashed,
+        'role'       => 'tourist',
+        'gender'     => 'male',
+        'age'        => 18,
+        'phone'      => '',
+        'status'     => 'active',
+        'avatar'     => $avatar ?: null,
+        'created_at' => date('Y-m-d H:i:s'),
+    ];
+
+    $new_id = $userModel->create($user_data);
+    if ($new_id) {
+        $db->prepare("UPDATE users SET oauth_provider = :provider, oauth_id = :oid WHERE id = :uid")
+            ->execute([':provider' => $provider, ':oid' => $oauth_id, ':uid' => $new_id]);
+
+        start_session();
+        $_SESSION['user_id'] = $new_id;
+        $_SESSION['role'] = 'tourist';
+        $_SESSION['name'] = $name;
+        $_SESSION['email'] = $email;
+        session_regenerate_id(true);
+
+        ActivityLog::log($new_id, 'register', "New user registered via {$provider} OAuth");
+        $notif = new Notification();
+        $adminIds = array_column(
+            $db->query("SELECT id FROM users WHERE role = 'admin' AND status = 'active'")->fetchAll(), 'id'
+        );
+        foreach ($adminIds as $adminId) {
+            $notif->create([
+                'user_id' => $adminId,
+                'title'   => 'New User Registration',
+                'message' => "{$name} ({$email}) has registered via {$provider}. Account is active.",
+                'type'    => 'registration',
+                'link'    => '/admin/users.php',
+            ]);
+        }
+        return ['success' => true, 'user' => $userModel->findById($new_id)];
+    }
+
+    return ['success' => false, 'message' => 'Registration failed. Please try again.'];
+}

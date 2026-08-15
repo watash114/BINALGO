@@ -12,6 +12,8 @@ ALTER TABLE users ADD COLUMN login_count INTEGER DEFAULT 0;
 ALTER TABLE users ADD COLUMN last_user_agent TEXT NULL;
 ALTER TABLE users ADD COLUMN reset_token VARCHAR(255) NULL;
 ALTER TABLE users ADD COLUMN reset_expires DATETIME NULL;
+ALTER TABLE users ADD COLUMN oauth_provider VARCHAR(50) NULL;
+ALTER TABLE users ADD COLUMN oauth_id VARCHAR(255) NULL;
 
 -- ============================================================
 -- 0b. payments — fix method NOT NULL with no default

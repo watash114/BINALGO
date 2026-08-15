@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS users (
     last_user_agent TEXT NULL,
     reset_token VARCHAR(255) NULL,
     reset_expires DATETIME NULL,
+    oauth_provider VARCHAR(50) NULL,
+    oauth_id VARCHAR(255) NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
