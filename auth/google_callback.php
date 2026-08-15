@@ -11,7 +11,11 @@ unset($_SESSION['oauth_state']);
 
 $clientId     = getenv('GOOGLE_CLIENT_ID');
 $clientSecret = getenv('GOOGLE_CLIENT_SECRET');
-$redirectUri  = getenv('GOOGLE_REDIRECT_URI') ?: (rtrim(getenv('BASE_URL') ?: '', '/') . '/auth/google_callback.php');
+$redirectUri  = getenv('GOOGLE_REDIRECT_URI');
+if (!$redirectUri) {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $redirectUri = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/auth/google_callback.php';
+}
 
 if (empty($clientId) || empty($clientSecret)) {
     flash_message('error', 'Google login is not configured.');

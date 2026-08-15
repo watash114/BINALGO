@@ -379,7 +379,7 @@ BINALGO
 <?php else: ?>
 <div class="topbar">
     <a href="<?= BASE_URL ?>/" class="topbar-brand">
-        <img src="<?= BASE_URL ?>/assets/images/binalgo-logo.svg" alt="BINALGO" style="width:36px;height:36px;border-radius:6px;">
+        <i class="fas fa-map-marked-alt"></i>
 BINALGO
     </a>
     <div class="topbar-right">

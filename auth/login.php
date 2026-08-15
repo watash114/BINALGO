@@ -75,7 +75,7 @@ if (is_post()) {
     <div class="auth-card">
         <div class="auth-header">
             <div class="logo">
-                <img src="<?= BASE_URL ?>/assets/images/binalgo-logo.svg" alt="BINALGO" style="width:48px;height:48px;border-radius:8px;">
+                <i class="fas fa-map-location-dot"></i>
             </div>
             <h4>Welcome Back</h4>
             <p>Sign in to your account</p>

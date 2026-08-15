@@ -11,7 +11,11 @@ unset($_SESSION['oauth_state']);
 
 $appId       = getenv('FACEBOOK_APP_ID');
 $appSecret   = getenv('FACEBOOK_APP_SECRET');
-$redirectUri = getenv('FACEBOOK_REDIRECT_URI') ?: (rtrim(getenv('BASE_URL') ?: '', '/') . '/auth/facebook_callback.php');
+$redirectUri = getenv('FACEBOOK_REDIRECT_URI');
+if (!$redirectUri) {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $redirectUri = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/auth/facebook_callback.php';
+}
 
 if (empty($appId) || empty($appSecret)) {
     flash_message('error', 'Facebook login is not configured.');

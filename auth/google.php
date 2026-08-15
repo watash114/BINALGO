@@ -4,7 +4,11 @@ require_once __DIR__ . '/../includes/helpers.php';
 start_session();
 
 $clientId = getenv('GOOGLE_CLIENT_ID');
-$redirectUri = getenv('GOOGLE_REDIRECT_URI') ?: (rtrim(getenv('BASE_URL') ?: '', '/') . '/auth/google_callback.php');
+$redirectUri = getenv('GOOGLE_REDIRECT_URI');
+if (!$redirectUri) {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $redirectUri = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/auth/google_callback.php';
+}
 $scope = 'openid email profile';
 
 if (empty($clientId)) {
