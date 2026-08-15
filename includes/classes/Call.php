@@ -15,7 +15,7 @@ class Call
     {
         $stmt = $this->db->prepare(
             "INSERT INTO calls (caller_id, receiver_id, call_type, status, started_at, ended_at, duration, created_at)
-             VALUES (:caller_id, :receiver_id, :call_type, :status, :started_at, :ended_at, :duration, NOW())"
+             VALUES (:caller_id, :receiver_id, :call_type, :status, :started_at, :ended_at, :duration, db_now())"
         );
         $stmt->execute([
             ':caller_id'   => $data['caller_id'],

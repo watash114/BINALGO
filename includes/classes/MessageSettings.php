@@ -99,7 +99,7 @@ class MessageSettings
         $json = json_encode($blocked);
         $stmt = $this->db->prepare(
             "INSERT INTO user_message_settings (user_id, blocked_users) VALUES (:uid, :blocked)
-             ON DUPLICATE KEY UPDATE blocked_users = :blocked2"
+             ON CONFLICT(user_id) DO UPDATE SET blocked_users = :blocked2"
         );
         return $stmt->execute([':uid' => $userId, ':blocked' => $json, ':blocked2' => $json]);
     }

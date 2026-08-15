@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../includes/layout.php';
 require_role('tourist');
 
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('/tourist/profile.php');
         }
 
-        $db->prepare("UPDATE users SET name = :name, gender = :gender, age = :age, phone = :phone, updated_at = NOW() WHERE id = :uid")
+        $db->prepare("UPDATE users SET name = :name, gender = :gender, age = :age, phone = :phone, updated_at = db_now() WHERE id = :uid")
             ->execute([':name' => $name, ':gender' => $gender, ':age' => $age, ':phone' => $phone, ':uid' => $user_id]);
 
         $tp_check = $db->prepare("SELECT id FROM tourist_profiles WHERE user_id = :uid");
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-        $db->prepare("UPDATE users SET password = :pw, updated_at = NOW() WHERE id = :uid")
+        $db->prepare("UPDATE users SET password = :pw, updated_at = db_now() WHERE id = :uid")
             ->execute([':pw' => $hashed, ':uid' => $user_id]);
 
         ActivityLog::log($user_id, 'password_changed', 'Password changed');
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('/tourist/profile.php');
         }
 
-        $db->prepare("INSERT INTO id_verifications (user_id, id_type, id_file_path, status, created_at) VALUES (:uid, :type, :path, 'pending', NOW())")
+        $db->prepare("INSERT INTO id_verifications (user_id, id_type, id_file_path, status, created_at) VALUES (:uid, :type, :path, 'pending', db_now())")
             ->execute([':uid' => $user_id, ':type' => $id_type, ':path' => $upload['path']]);
 
         ActivityLog::log($user_id, 'id_verification_submitted', "ID verification submitted: {$id_type}");
@@ -218,7 +218,7 @@ if (!empty($profile['emergency_contact_number'])) {
     }
 }
 
-$country_codes = ['+63' => '🇵🇭 +63', '+1' => '🇺🇸 +1', '+44' => '🇬🇧 +44', '+61' => '🇦🇺 +61', '+65' => '🇸🇬 +65', '+81' => '🇯🇵 +81', '+852' => '🇭🇰 +852'];
+$country_codes = ['+63' => '???? +63', '+1' => '???? +1', '+44' => '???? +44', '+61' => '???? +61', '+65' => '???? +65', '+81' => '???? +81', '+852' => '???? +852'];
 
 render_page('tourist', 'profile.php', 'My Profile', function() use ($user, $profile, $verifications, $current_verification, $id_type_labels, $csrf, $active_tab, $parsed_phone, $parsed_emergency, $country_codes) {
 ?>
@@ -403,7 +403,7 @@ select.profile-input{-webkit-appearance:none;-moz-appearance:none;appearance:non
                                 <div class="profile-field">
                                     <label class="form-label" for="age"><i class="fas fa-cake-candles"></i>Age <span class="text-danger">*</span></label>
                                     <input type="number" id="age" name="age" class="profile-input" value="<?= (int)($user['age'] ?? 18) ?>" min="1" max="120" required>
-                                    <div class="field-error" id="err-age"><i class="fas fa-circle-exclamation"></i> Please enter a valid age (1–120).</div>
+                                    <div class="field-error" id="err-age"><i class="fas fa-circle-exclamation"></i> Please enter a valid age (1�120).</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -553,7 +553,7 @@ select.profile-input{-webkit-appearance:none;-moz-appearance:none;appearance:non
                         </div>
                         <div class="flex-grow-1">
                             <div class="fw-bold" style="color:<?= $vsInfo['color'] ?>;font-size:0.95rem;"><?= $vsInfo['label'] ?></div>
-                            <div class="small" style="color:var(--text-muted,#64748b);"><?= $id_type_labels[$current_verification['id_type']] ?? $current_verification['id_type'] ?> · <?= format_date($current_verification['created_at']) ?></div>
+                            <div class="small" style="color:var(--text-muted,#64748b);"><?= $id_type_labels[$current_verification['id_type']] ?? $current_verification['id_type'] ?> � <?= format_date($current_verification['created_at']) ?></div>
                         </div>
                     </div>
 
@@ -603,7 +603,7 @@ select.profile-input{-webkit-appearance:none;-moz-appearance:none;appearance:non
                         <div id="dropPlaceholder">
                             <div class="dz-icon"><i class="fas fa-cloud-arrow-up" style="font-size:1.4rem;color:var(--primary);"></i></div>
                             <div class="small fw-semibold" style="color:var(--text-primary,#1e293b);">Click or drag to upload</div>
-                            <div class="small" style="color:var(--text-muted,#94a3b8);">JPG, PNG, or PDF · Max 10MB</div>
+                            <div class="small" style="color:var(--text-muted,#94a3b8);">JPG, PNG, or PDF � Max 10MB</div>
                         </div>
                         <div id="filePreview" style="display:none;">
                             <div class="file-chip">
@@ -1104,7 +1104,7 @@ function previewAndSubmit(input) {
         }
 
         fileName.textContent = file.name;
-        fileMeta.textContent = formatSize(file.size) + ' · ' + (file.type.split('/')[1] || '').toUpperCase();
+        fileMeta.textContent = formatSize(file.size) + ' � ' + (file.type.split('/')[1] || '').toUpperCase();
         dropPlaceholder.style.display = 'none';
         filePreview.style.display = 'block';
 

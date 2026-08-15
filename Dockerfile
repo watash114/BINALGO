@@ -6,13 +6,16 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql gd \
+    && docker-php-ext-install pdo pdo_sqlite gd \
+    && docker-php-ext-install pdo_mysql \
     && a2enmod rewrite
 
 COPY . /var/www/html/
 
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/uploads
+RUN mkdir -p /var/www/html/database \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/uploads \
+    && chmod 777 /var/www/html/database
 
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 

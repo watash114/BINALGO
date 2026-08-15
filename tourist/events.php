@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_bookmark'])) {
     if ($check->fetch()) {
         $db->prepare("DELETE FROM event_bookmarks WHERE event_id = :eid AND user_id = :uid")->execute([':eid' => $eid, ':uid' => $user_id]);
     } else {
-        $db->prepare("INSERT INTO event_bookmarks (event_id, user_id, created_at) VALUES (:eid, :uid, NOW())")->execute([':eid' => $eid, ':uid' => $user_id]);
+        $db->prepare("INSERT INTO event_bookmarks (event_id, user_id, created_at) VALUES (:eid, :uid, db_now())")->execute([':eid' => $eid, ':uid' => $user_id]);
     }
     $qs = $_GET;
     unset($qs['page']);
@@ -47,9 +47,9 @@ $where = ["e.status = 'published'"];
 $params = [];
 
 if ($pastMode) {
-    $where[] = "e.event_start_date IS NOT NULL AND e.event_start_date < CURDATE()";
+    $where[] = "e.event_start_date IS NOT NULL AND e.event_start_date < db_curdate()";
 } else {
-    $where[] = "(e.event_start_date >= CURDATE() OR e.event_start_date IS NULL)";
+    $where[] = "(e.event_start_date >= db_curdate() OR e.event_start_date IS NULL)";
 }
 
 if ($search) {
@@ -65,7 +65,7 @@ if ($catFilter) {
 
 $calMonth = '';
 if ($when === 'this_month') {
-    $where[] = "DATE_FORMAT(e.event_start_date, '%Y-%m') = :month";
+    $where[] = "db_date_format(, '') = :month";
     $params[':month'] = date('Y-m');
 } elseif ($when === 'this_weekend') {
     $dow = (int) date('w');
@@ -84,7 +84,7 @@ if ($when === 'this_month') {
     $params[':wk_end'] = $wkEnd;
 } elseif (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $when)) {
     $calMonth = $when;
-    $where[] = "DATE_FORMAT(e.event_start_date, '%Y-%m') = :month";
+    $where[] = "db_date_format(, '') = :month";
     $params[':month'] = $when;
 }
 
@@ -124,7 +124,7 @@ if (!$pastMode && !$search && !$catFilter && !$when) {
                 (SELECT COUNT(*) FROM bookings b JOIN schedules s2 ON b.schedule_id = s2.id WHERE s2.event_id = e.id AND b.status IN ('confirmed','completed')) as attendee_count
          FROM events e
          LEFT JOIN destinations d ON e.destination_id = d.id
-         WHERE e.status = 'published' AND e.event_start_date >= CURDATE()
+         WHERE e.status = 'published' AND e.event_start_date >= db_curdate()
          ORDER BY e.event_start_date ASC
          LIMIT 3"
     )->fetchAll();
@@ -150,7 +150,7 @@ if ($view === 'calendar') {
                 (SELECT COUNT(*) FROM bookings b JOIN schedules s2 ON b.schedule_id = s2.id WHERE s2.event_id = e.id AND b.status IN ('confirmed','completed')) as attendee_count
          FROM events e
          LEFT JOIN destinations d ON e.destination_id = d.id
-         WHERE e.status = 'published' AND DATE_FORMAT(e.event_start_date, '%Y-%m') = :month
+         WHERE e.status = 'published' AND db_date_format(, '') = :month
          ORDER BY e.event_start_date ASC, e.event_start_time ASC"
     );
     $calStmt->execute([':month' => $calMonth]);
@@ -604,7 +604,7 @@ function addToCalendar(btn) {
     var fmt = function (s) { var n = s.replace(/[^\d]/g, ''); return n.slice(0, 8) + 'T' + n.slice(8, 14); };
     var title = btn.dataset.title, loc = btn.dataset.location, start = btn.dataset.start, end = btn.dataset.end;
     var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//BINALGO//Events//EN', 'BEGIN:VEVENT',
-        'UID:' + Date.now() + '@binalgo.local',
+        'UID:' + Date.db_now() + '@binalgo.local',
         'DTSTART:' + fmt(start), 'DTEND:' + fmt(end),
         'SUMMARY:' + title, 'LOCATION:' + loc, 'END:VEVENT', 'END:VCALENDAR'];
     var blob = new Blob([lines.join('\r\n')], { type: 'text/calendar' });
@@ -632,7 +632,7 @@ function addToCalendar(btn) {
 document.querySelectorAll('[data-countdown]').forEach(function (el) {
     var raw = el.dataset.countdown.replace(' ', 'T'); if (raw.length <= 10) raw += 'T00:00:00'; var target = new Date(raw).getTime();
     function update() {
-        var now = Date.now(), diff = target - now;
+        var now = Date.db_now(), diff = target - now;
         if (diff <= 0) { el.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:8px;font-size:.72rem;font-weight:700;background:#d1fae5;color:#059669;"><i class="fas fa-circle" style="font-size:6px;"></i>Happening Now</span>'; return; }
         var d = Math.floor(diff / 86400000), h = Math.floor((diff % 86400000) / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
         var days = el.querySelector('.cd-days'), hours = el.querySelector('.cd-hours'), mins = el.querySelector('.cd-mins'), secs = el.querySelector('.cd-secs');

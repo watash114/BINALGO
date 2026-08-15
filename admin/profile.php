@@ -16,7 +16,7 @@ if (is_post() && verify_token($_POST['csrf_token'] ?? null)) {
     if (empty($name) || empty($email)) {
         $error = 'Name and email are required.';
     } else {
-        $stmt = $db->prepare("UPDATE users SET name = :name, phone = :phone, email = :email, updated_at = NOW() WHERE id = :id");
+        $stmt = $db->prepare("UPDATE users SET name = :name, phone = :phone, email = :email, updated_at = db_now() WHERE id = :id");
         $stmt->execute([':name' => $name, ':phone' => $phone, ':email' => $email, ':id' => $user_id]);
 
             if (!empty($_FILES['avatar']['name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {

@@ -110,21 +110,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $bid = (int)($_POST['booking_id'] ?? 0);
 
     if ($action === 'confirm' && $bid) {
-        $db->prepare("UPDATE bookings SET status = 'confirmed', updated_at = NOW() WHERE id = :id AND status = 'pending'")->execute([':id' => $bid]);
+        $db->prepare("UPDATE bookings SET status = 'confirmed', updated_at = db_now() WHERE id = :id AND status = 'pending'")->execute([':id' => $bid]);
         $notif = new Notification(); $notif->notifyBookingConfirmed($bid);
         ActivityLog::log($_SESSION['user_id'], 'booking_confirm', 'Confirmed booking #' . $bid);
         $respond(true, 'Booking confirmed.');
     }
 
     if ($action === 'cancel' && $bid) {
-        $db->prepare("UPDATE bookings SET status = 'cancelled', updated_at = NOW() WHERE id = :id AND status IN ('pending','confirmed')")->execute([':id' => $bid]);
+        $db->prepare("UPDATE bookings SET status = 'cancelled', updated_at = db_now() WHERE id = :id AND status IN ('pending','confirmed')")->execute([':id' => $bid]);
         $notif = new Notification(); $notif->notifyBookingCancelled($bid);
         ActivityLog::log($_SESSION['user_id'], 'booking_cancel', 'Cancelled booking #' . $bid);
         $respond(true, 'Booking cancelled.');
     }
 
     if ($action === 'complete' && $bid) {
-        $db->prepare("UPDATE bookings SET status = 'completed', updated_at = NOW() WHERE id = :id AND status = 'confirmed'")->execute([':id' => $bid]);
+        $db->prepare("UPDATE bookings SET status = 'completed', updated_at = db_now() WHERE id = :id AND status = 'confirmed'")->execute([':id' => $bid]);
         $notif = new Notification(); $notif->notifyBookingCompleted($bid);
         ActivityLog::log($_SESSION['user_id'], 'booking_complete', 'Completed booking #' . $bid);
         $respond(true, 'Booking marked as completed.');

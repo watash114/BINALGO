@@ -82,7 +82,7 @@ class Destination
         $stmt = $this->db->prepare(
             "INSERT INTO destination_guides (destination_id, guide_id, is_primary)
              VALUES (:did, :gid, :is_primary)
-             ON DUPLICATE KEY UPDATE status = 'active', is_primary = VALUES(is_primary)"
+             ON CONFLICT(destination_id, guide_id) DO UPDATE SET status = 'active', is_primary = :is_primary"
         );
         return $stmt->execute([':did' => $destination_id, ':gid' => $guide_id, ':is_primary' => $is_primary ? 1 : 0]);
     }
@@ -96,7 +96,7 @@ class Destination
     public function toggleGuideStatus(int $destination_id, int $guide_id): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE destination_guides SET status = IF(status = 'active', 'inactive', 'active')
+            "UPDATE destination_guides SET status = CASE WHEN status = 'active' THEN 'inactive' ELSE 'active' END
              WHERE destination_id = :did AND guide_id = :gid"
         );
         return $stmt->execute([':did' => $destination_id, ':gid' => $guide_id]);
@@ -175,7 +175,7 @@ class Destination
                 :opening_hours, :closing_hours, :category, :difficulty, :capacity_limit, :max_guests,
                 :booking_days, :age_min, :age_max, :accessibility, :rules, :facilities,
                 :entrance_fee, :package_price, :image, :gallery_images, :status, :booking_enabled, :guide_required,
-                :cutoff_hours, :advance_days, :cancellation_policy, :featured, :created_by, NOW())"
+                :cutoff_hours, :advance_days, :cancellation_policy, :featured, :created_by, db_now())"
         );
 
         $stmt->execute([
@@ -227,7 +227,7 @@ class Destination
 
         if (empty($fields)) return false;
 
-        $fields[] = "updated_at = NOW()";
+        $fields[] = "updated_at = db_now()";
         $set_clause = implode(', ', $fields);
 
         $stmt = $this->db->prepare("UPDATE destinations SET {$set_clause} WHERE id = :id");
@@ -295,14 +295,14 @@ class Destination
 
     public function toggleFeatured(int $id): bool
     {
-        $stmt = $this->db->prepare("UPDATE destinations SET featured = NOT featured, updated_at = NOW() WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE destinations SET featured = NOT featured, updated_at = db_now() WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
     public function toggleStatus(int $id): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE destinations SET status = IF(status = 'active', 'inactive', 'active'), updated_at = NOW() WHERE id = :id"
+            "UPDATE destinations SET status = CASE WHEN status = 'active' THEN 'inactive' ELSE 'active' END, updated_at = db_now() WHERE id = :id"
         );
         return $stmt->execute([':id' => $id]);
     }
@@ -310,7 +310,7 @@ class Destination
     public function toggleBooking(int $id): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE destinations SET booking_enabled = NOT booking_enabled, updated_at = NOW() WHERE id = :id"
+            "UPDATE destinations SET booking_enabled = NOT booking_enabled, updated_at = db_now() WHERE id = :id"
         );
         return $stmt->execute([':id' => $id]);
     }

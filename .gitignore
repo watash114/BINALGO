@@ -17,3 +17,6 @@ vendor/
 
 # Session / temp files
 *.log
+
+# SQLite database
+database/*.db

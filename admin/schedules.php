@@ -139,7 +139,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
         if ($action === 'add_schedule') {
             $db->prepare("INSERT INTO schedules (event_id, guide_id, start_date, end_date, start_time, end_time, available_spots, status, created_at)
-                VALUES (:e,:g,:sd,:ed,:st,:et,:asp,'scheduled',NOW())")->execute([
+                VALUES (:e,:g,:sd,:ed,:st,:et,:asp,'scheduled',db_now())")->execute([
                 ':e' => $eventId, ':g' => $guideId, ':sd' => $startDate, ':ed' => $endDate,
                 ':st' => $startTime, ':et' => $endTime, ':asp' => $availableSpots,
             ]);

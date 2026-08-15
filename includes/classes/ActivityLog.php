@@ -20,7 +20,7 @@ class ActivityLog
 
             $stmt = $db->prepare(
                 "INSERT INTO activity_logs (user_id, action, details, ip_address, created_at)
-                 VALUES (:user_id, :action, :details, :ip_address, NOW())"
+                 VALUES (:user_id, :action, :details, :ip_address, db_now())"
             );
 
             return $stmt->execute([
@@ -67,9 +67,9 @@ class ActivityLog
         $stmt = $this->db->query(
             "SELECT
                 COUNT(*) as total_logs,
-                SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today,
-                SUM(CASE WHEN created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as this_week,
-                SUM(CASE WHEN created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as this_month
+                SUM(CASE WHEN DATE(created_at) = db_curdate() THEN 1 ELSE 0 END) as today,
+                SUM(CASE WHEN created_at >= db_date_sub(, 'INTERVAL  ') THEN 1 ELSE 0 END) as this_week,
+                SUM(CASE WHEN created_at >= db_date_sub(, 'INTERVAL  ') THEN 1 ELSE 0 END) as this_month
              FROM activity_logs"
         );
         $stats = $stmt->fetch();
@@ -85,7 +85,7 @@ class ActivityLog
     public function clearOld(int $days = 90): bool
     {
         $stmt = $this->db->prepare(
-            "DELETE FROM activity_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL :days DAY)"
+            "DELETE FROM activity_logs WHERE created_at < DATE_SUB(db_now(), INTERVAL :days DAY)"
         );
         return $stmt->execute([':days' => $days]);
     }

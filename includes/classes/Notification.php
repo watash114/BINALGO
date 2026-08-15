@@ -282,7 +282,7 @@ class Notification
     public function deleteOld(int $days = 30): bool
     {
         $stmt = $this->db->prepare(
-            "DELETE FROM notifications WHERE created_at < DATE_SUB(NOW(), INTERVAL :days DAY)"
+            "DELETE FROM notifications WHERE created_at < DATE_SUB(db_now(), INTERVAL :days DAY)"
         );
         return $stmt->execute([':days' => $days]);
     }
@@ -291,7 +291,7 @@ class Notification
     {
         $total = $this->db->query("SELECT COUNT(*) FROM notifications")->fetchColumn();
         $unread = $this->db->query("SELECT COUNT(*) FROM notifications WHERE is_read = 0")->fetchColumn();
-        $today = $this->db->query("SELECT COUNT(*) FROM notifications WHERE DATE(created_at) = CURDATE()")->fetchColumn();
+        $today = $this->db->query("SELECT COUNT(*) FROM notifications WHERE DATE(created_at) = db_curdate()")->fetchColumn();
         return [
             'total'  => (int)$total,
             'unread' => (int)$unread,

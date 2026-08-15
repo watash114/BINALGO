@@ -360,7 +360,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $stmt->execute([':uid' => $uid]);
         $verifId = $stmt->fetchColumn();
         if (!$verifId) $respond(false, 'No ID verification submission found for this user.');
-        $db->prepare("UPDATE id_verifications SET status = :s, verified_by = :vb, verified_at = NOW(), admin_notes = :notes WHERE id = :id")
+        $db->prepare("UPDATE id_verifications SET status = :s, verified_by = :vb, verified_at = db_now(), admin_notes = :notes WHERE id = :id")
             ->execute([':s' => $verdict, ':vb' => $_SESSION['user_id'], ':notes' => $notes, ':id' => $verifId]);
         (new Notification())->create([
             'user_id' => $uid,
@@ -720,7 +720,7 @@ function timeAgo(d) {
     if (!d) return 'Never';
     const dt = new Date(d.replace(' ', 'T'));
     if (isNaN(dt)) return d;
-    const s = Math.floor((Date.now() - dt) / 1000);
+    const s = Math.floor((Date.db_now() - dt) / 1000);
     if (s < 60) return 'just now';
     const m = Math.floor(s / 60); if (m < 60) return m + 'm ago';
     const h = Math.floor(m / 60); if (h < 24) return h + 'h ago';

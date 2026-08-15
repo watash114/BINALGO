@@ -513,7 +513,7 @@ function startPolling() {
     const chatWith = <?= $chat_user_id ?: 0 ?>;
     if (!chatWith) return;
     pollInterval = setInterval(function() {
-        fetch('<?= BASE_URL ?>/includes/ajax/poll_messages.php?chat_with=' + chatWith + '&last_id=' + lastMsgId + '&t=' + Date.now())
+        fetch('<?= BASE_URL ?>/includes/ajax/poll_messages.php?chat_with=' + chatWith + '&last_id=' + lastMsgId + '&t=' + Date.db_now())
             .then(r => r.json())
             .then(data => {
                 if (data.new_messages && data.new_messages.length) {

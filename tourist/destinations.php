@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_bookmark'])) {
     if ($check->fetch()) {
         $db->prepare("DELETE FROM dest_bookmarks WHERE destination_id = :did AND user_id = :uid")->execute([':did' => $did, ':uid' => $user_id]);
     } else {
-        $db->prepare("INSERT INTO dest_bookmarks (destination_id, user_id, created_at) VALUES (:did, :uid, NOW())")->execute([':did' => $did, ':uid' => $user_id]);
+        $db->prepare("INSERT INTO dest_bookmarks (destination_id, user_id, created_at) VALUES (:did, :uid, db_now())")->execute([':did' => $did, ':uid' => $user_id]);
     }
     $qs = $_GET;
     unset($qs['page']);

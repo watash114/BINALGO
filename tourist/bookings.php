@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['cancel_booking'])) {
         $bid = (int) $_POST['booking_id'];
         $cancel_stmt = $db->prepare(
-            "UPDATE bookings SET status = 'cancelled', updated_at = NOW()
+            "UPDATE bookings SET status = 'cancelled', updated_at = db_now()
              WHERE id = :id AND tourist_id = :uid AND status IN ('pending','confirmed')"
         );
         $cancel_stmt->execute([':id' => $bid, ':uid' => $user_id]);

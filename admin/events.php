@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/classes/Notification.php';
 require_once __DIR__ . '/../includes/classes/Destination.php';
 
 $db = Database::getInstance()->getConnection();
-$db->exec("UPDATE events SET status = 'completed', updated_at = NOW() WHERE status = 'published' AND event_end_date IS NOT NULL AND event_end_date < CURDATE()");
+$db->exec("UPDATE events SET status = 'completed', updated_at = db_now() WHERE status = 'published' AND event_end_date IS NOT NULL AND event_end_date < db_curdate()");
 
 $eventModel = new Event();
 
@@ -158,20 +158,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     }
 
     if ($action === 'publish_event' && $eid) {
-        $db->prepare("UPDATE events SET status = 'published', updated_at = NOW() WHERE id = :id")->execute([':id' => $eid]);
+        $db->prepare("UPDATE events SET status = 'published', updated_at = db_now() WHERE id = :id")->execute([':id' => $eid]);
         $notif = new Notification(); $notif->notifyEventPublished($eid);
         ActivityLog::log($_SESSION['user_id'], 'event_publish', 'Published event #' . $eid);
         $respond(true, 'Event published!');
     }
 
     if ($action === 'unpublish_event' && $eid) {
-        $db->prepare("UPDATE events SET status = 'draft', updated_at = NOW() WHERE id = :id")->execute([':id' => $eid]);
+        $db->prepare("UPDATE events SET status = 'draft', updated_at = db_now() WHERE id = :id")->execute([':id' => $eid]);
         ActivityLog::log($_SESSION['user_id'], 'event_unpublish', 'Unpublished event #' . $eid);
         $respond(true, 'Event unpublished.');
     }
 
     if ($action === 'cancel_event' && $eid) {
-        $db->prepare("UPDATE events SET status = 'cancelled', updated_at = NOW() WHERE id = :id")->execute([':id' => $eid]);
+        $db->prepare("UPDATE events SET status = 'cancelled', updated_at = db_now() WHERE id = :id")->execute([':id' => $eid]);
         $notif = new Notification(); $notif->notifyEventCancelled($eid);
         ActivityLog::log($_SESSION['user_id'], 'event_cancel', 'Cancelled event #' . $eid);
         $respond(true, 'Event cancelled.');

@@ -337,7 +337,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 booking_cutoff_hours, advance_booking_days, cancellation_policy, featured, created_by, created_at)
              VALUES (:name, :desc, :loc, :phone, :email, :lat, :lng, :open_hr, :close_hr, :cat, :diff, :cap, :maxg,
                 :days, :age_min, :age_max, :access, :rules, :fac, :fee, :pkg, :bk_price, :img, :gallery, :video_url, 'active', :bk_en, 0,
-                :cutoff, :advance, :cancel, 0, :uid, NOW())"
+                :cutoff, :advance, :cancel, 0, :uid, db_now())"
         );
         $stmt->execute([
             ':name' => sanitize($_POST['name'] ?? ''), ':desc' => sanitize($_POST['description'] ?? ''),
@@ -402,7 +402,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 accessibility_info=:access, rules_regulations=:rules, facilities=:fac,
                 entrance_fee=:fee, package_price=:pkg, booking_price=:bk_price, image=:img, gallery_images=:gallery,
                 video_url=:video_url, booking_enabled=:bk_en, guide_required=0, booking_cutoff_hours=:cutoff,
-                advance_booking_days=:advance, cancellation_policy=:cancel, featured=:featured, updated_at=NOW()
+                advance_booking_days=:advance, cancellation_policy=:cancel, featured=:featured, updated_at=db_now()
              WHERE id=:id"
         );
         $stmt->execute([
@@ -436,7 +436,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $startMonth = (int)($_POST['start_month'] ?? 1);
         $endMonth = (int)($_POST['end_month'] ?? 12);
         $months = $startMonth === $endMonth ? (string)$startMonth : $startMonth . '-' . $endMonth;
-        $db->prepare("INSERT INTO destination_seasons (destination_id, season_type, months, description, created_at) VALUES (:dest_id, :season_type, :months, :description, NOW())")
+        $db->prepare("INSERT INTO destination_seasons (destination_id, season_type, months, description, created_at) VALUES (:dest_id, :season_type, :months, :description, db_now())")
             ->execute([':dest_id' => $did, ':season_type' => $_POST['season_type'] ?? 'peak', ':months' => $months, ':description' => sanitize($_POST['season_description'] ?? '')]);
         ActivityLog::log($_SESSION['user_id'], 'destination_edit', "Added season for destination #{$did}");
         $respond(true, 'Season added.');

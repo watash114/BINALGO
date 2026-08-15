@@ -6,7 +6,7 @@ $db = Database::getInstance()->getConnection();
 
 // Auto-promote due scheduled broadcasts to delivered when the page is opened.
 try {
-    $db->exec("UPDATE notifications SET status = 'delivered' WHERE status = 'scheduled' AND scheduled_at IS NOT NULL AND scheduled_at <= NOW()");
+    $db->exec("UPDATE notifications SET status = 'delivered' WHERE status = 'scheduled' AND scheduled_at IS NOT NULL AND scheduled_at <= db_now()");
 } catch (Throwable $e) { /* best effort */ }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'clear_old') {
         $days = max(7, (int)($_POST['days'] ?? 30));
-        $stmt = $db->prepare("DELETE FROM notifications WHERE created_at < DATE_SUB(NOW(), INTERVAL :days DAY)");
+        $stmt = $db->prepare("DELETE FROM notifications WHERE created_at < DATE_SUB(db_now(), INTERVAL :days DAY)");
         $stmt->execute([':days' => $days]);
         $deleted = $stmt->rowCount();
         flash_message('success', "Deleted {$deleted} notifications older than {$days} days.");
@@ -215,7 +215,7 @@ $notifications = $notif_stmt->fetchAll();
 
 $total_all = $db->query("SELECT COUNT(*) FROM notifications")->fetchColumn();
 $total_unread = $db->query("SELECT COUNT(*) FROM notifications WHERE is_read = 0")->fetchColumn();
-$total_today = $db->query("SELECT COUNT(*) FROM notifications WHERE DATE(created_at) = CURDATE()")->fetchColumn();
+$total_today = $db->query("SELECT COUNT(*) FROM notifications WHERE DATE(created_at) = db_curdate()")->fetchColumn();
 $total_scheduled = $db->query("SELECT COUNT(DISTINCT batch_id) FROM notifications WHERE status = 'scheduled'")->fetchColumn();
 
 $users_stmt = $db->query("SELECT id, name, email, role FROM users WHERE status = 'active' ORDER BY name");
@@ -967,7 +967,7 @@ function syncSchedule() {
     scheduleToggle.classList.toggle('active', scheduleEnabled.checked);
     scheduleInputWrap.style.display = scheduleEnabled.checked ? 'block' : 'none';
     if (scheduleEnabled.checked && !scheduledAt.value) {
-        var d = new Date(Date.now() + 3600000);
+        var d = new Date(Date.db_now() + 3600000);
         var pad = function(n) { return n < 10 ? '0' + n : n; };
         scheduledAt.value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     }
@@ -1033,7 +1033,7 @@ function handleSend(e) {
 
     if (scheduleEnabled.checked && scheduledAt.value) {
         var when = new Date(scheduledAt.value);
-        if (when.getTime() <= Date.now()) {
+        if (when.getTime() <= Date.db_now()) {
             alert('Scheduled time must be in the future, or turn off scheduling to send now.');
             e.preventDefault();
             return false;

@@ -34,7 +34,7 @@ $upcoming_stmt = $db->prepare(
      JOIN schedules s ON b.schedule_id = s.id
      JOIN events e ON s.event_id = e.id
      JOIN destinations d ON e.destination_id = d.id
-     WHERE b.tourist_id = :uid AND b.status IN ('confirmed','pending') AND s.start_date >= CURDATE()
+     WHERE b.tourist_id = :uid AND b.status IN ('confirmed','pending') AND s.start_date >= db_curdate()
      ORDER BY s.start_date ASC, s.start_time ASC
      LIMIT 4"
 );
@@ -45,7 +45,7 @@ $total_bookings_stmt = $db->prepare("SELECT COUNT(*) as cnt FROM bookings WHERE 
 $total_bookings_stmt->execute([':uid' => $_SESSION['user_id']]);
 $total_bookings = (int) $total_bookings_stmt->fetch()['cnt'];
 
-$upcoming_count_stmt = $db->prepare("SELECT COUNT(*) as cnt FROM bookings b JOIN schedules s ON b.schedule_id = s.id WHERE b.tourist_id = :uid AND b.status IN ('confirmed','pending') AND s.start_date >= CURDATE()");
+$upcoming_count_stmt = $db->prepare("SELECT COUNT(*) as cnt FROM bookings b JOIN schedules s ON b.schedule_id = s.id WHERE b.tourist_id = :uid AND b.status IN ('confirmed','pending') AND s.start_date >= db_curdate()");
 $upcoming_count_stmt->execute([':uid' => $_SESSION['user_id']]);
 $upcoming_count = (int) $upcoming_count_stmt->fetch()['cnt'];
 
@@ -67,7 +67,7 @@ $upcoming_events = $db->query(
             d.name as destination_name
      FROM events e
      LEFT JOIN destinations d ON e.destination_id = d.id
-     WHERE e.status = 'published' AND e.event_start_date >= CURDATE()
+     WHERE e.status = 'published' AND e.event_start_date >= db_curdate()
      ORDER BY e.event_start_date ASC
      LIMIT 4"
 )->fetchAll();

@@ -23,7 +23,7 @@ $completed_count_stmt = $db->prepare("SELECT COUNT(*) as cnt FROM schedules WHER
 $completed_count_stmt->execute([':gid' => $guide_id]);
 $completed_tours = (int) $completed_count_stmt->fetch()['cnt'];
 
-$upcoming_count_stmt = $db->prepare("SELECT COUNT(*) as cnt FROM schedules WHERE guide_id = :gid AND status = 'scheduled' AND start_date >= CURDATE()");
+$upcoming_count_stmt = $db->prepare("SELECT COUNT(*) as cnt FROM schedules WHERE guide_id = :gid AND status = 'scheduled' AND start_date >= db_curdate()");
 $upcoming_count_stmt->execute([':gid' => $guide_id]);
 $upcoming_count = (int) $upcoming_count_stmt->fetch()['cnt'];
 

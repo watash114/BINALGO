@@ -144,11 +144,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db->prepare(
             "INSERT INTO guide_profiles (user_id, years_of_experience, languages, specializations, bio)
              VALUES (:uid, :exp, :lang, :spec, :bio)
-             ON DUPLICATE KEY UPDATE
-                years_of_experience = VALUES(years_of_experience),
-                languages = VALUES(languages),
-                specializations = VALUES(specializations),
-                bio = VALUES(bio)"
+             ON CONFLICT(user_id) DO UPDATE SET
+                years_of_experience = :exp,
+                languages = :lang,
+                specializations = :spec,
+                bio = :bio"
         )->execute([
             ':uid'  => $guideId,
             ':exp'  => $experience,
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (in_array($availability, $validStatuses)) {
             $db->prepare(
                 "INSERT INTO guide_profiles (user_id, availability_status) VALUES (:uid, :avail)
-                 ON DUPLICATE KEY UPDATE availability_status = :avail2"
+                 ON CONFLICT(user_id) DO UPDATE SET availability_status = :avail2"
             )->execute([':uid' => $guideId, ':avail' => $availability, ':avail2' => $availability]);
             flash_message('success', 'Guide availability updated.');
         }

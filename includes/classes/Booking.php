@@ -132,7 +132,7 @@ class Booking
             return false;
         }
 
-        $fields[] = "updated_at = NOW()";
+        $fields[] = "updated_at = db_now()";
         $set_clause = implode(', ', $fields);
 
         $stmt = $this->db->prepare("UPDATE bookings SET {$set_clause} WHERE id = :id");

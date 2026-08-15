@@ -250,8 +250,8 @@ class Message
 
         $stmt = $this->db->prepare(
             "INSERT INTO conversations (user1_id, user2_id, last_message, last_activity, deleted_by_user1, deleted_by_user2)
-             VALUES (:u1, :u2, :msg, NOW(), 0, 0)
-             ON DUPLICATE KEY UPDATE last_message = :msg2, last_activity = NOW(),
+             VALUES (:u1, :u2, :msg, db_now(), 0, 0)
+             ON CONFLICT(user1_id, user2_id) DO UPDATE SET last_message = :msg2, last_activity = db_now(),
                  deleted_by_user1 = 0, deleted_by_user2 = 0"
         );
         $stmt->execute([':u1' => $u1, ':u2' => $u2, ':msg' => $lastMessage, ':msg2' => $lastMessage]);

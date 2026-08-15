@@ -23,7 +23,7 @@ if (is_post() && verify_token($_POST['csrf_token'] ?? null) && isset($_POST['nam
         $availability_status = 'available';
     }
 
-    $stmt = $db->prepare("UPDATE users SET name = :name, phone = :phone, updated_at = NOW() WHERE id = :id");
+    $stmt = $db->prepare("UPDATE users SET name = :name, phone = :phone, updated_at = db_now() WHERE id = :id");
     $stmt->execute([':name' => $name, ':phone' => $phone, ':id' => $guide_id]);
 
     $guide_check = $db->prepare("SELECT id FROM guide_profiles WHERE user_id = :uid LIMIT 1");

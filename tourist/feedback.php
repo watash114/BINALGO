@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/classes/Notification.php';
 require_role('tourist');
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $insert = $db->prepare(
             "INSERT INTO feedback (booking_id, tourist_id, guide_id, schedule_id, guide_rating, communication_rating, safety_rating, organization_rating, overall_rating, comment, suggestions, complaints, created_at)
-             VALUES (:booking_id, :tourist_id, :guide_id, :schedule_id, :guide_rating, :communication_rating, :safety_rating, :organization_rating, :overall_rating, :comment, :suggestions, :complaints, NOW())"
+             VALUES (:booking_id, :tourist_id, :guide_id, :schedule_id, :guide_rating, :communication_rating, :safety_rating, :organization_rating, :overall_rating, :comment, :suggestions, :complaints, db_now())"
         );
         $insert->execute([
             ':booking_id' => $booking_id,

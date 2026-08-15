@@ -85,7 +85,7 @@ class Event
              VALUES (:destination_id, :title, :description, :category, :event_image, :event_location,
                 :event_start_date, :event_end_date, :event_start_time, :event_end_time,
                 :organizer, :contact_info, :max_participants, :min_participants, :min_age, :max_age,
-                :health_restrictions, :requires_guide, :duration_hours, :price, :status, :created_by, NOW())"
+                :health_restrictions, :requires_guide, :duration_hours, :price, :status, :created_by, db_now())"
         );
 
         $stmt->execute([
@@ -130,7 +130,7 @@ class Event
             return false;
         }
 
-        $fields[] = "updated_at = NOW()";
+        $fields[] = "updated_at = db_now()";
         $set_clause = implode(', ', $fields);
 
         $stmt = $this->db->prepare("UPDATE events SET {$set_clause} WHERE id = :id");
@@ -171,7 +171,7 @@ class Event
              FROM events e
              LEFT JOIN destinations d ON e.destination_id = d.id
              LEFT JOIN schedules s ON s.event_id = e.id
-             WHERE s.start_date >= CURDATE() AND e.status = 'published'
+             WHERE s.start_date >= db_curdate() AND e.status = 'published'
              GROUP BY e.id
              ORDER BY s.start_date ASC
              LIMIT {$limit}"

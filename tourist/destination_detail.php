@@ -42,7 +42,7 @@ $events_stmt = $db->prepare(
      FROM events e
      JOIN schedules s ON s.event_id = e.id
      LEFT JOIN destinations d ON e.destination_id = d.id
-     WHERE e.destination_id = :dest_id AND e.status = 'published' AND s.status = 'scheduled' AND s.start_date >= CURDATE()
+     WHERE e.destination_id = :dest_id AND e.status = 'published' AND s.status = 'scheduled' AND s.start_date >= db_curdate()
      ORDER BY s.start_date ASC"
 );
 $events_stmt->execute([':dest_id' => $destId]);
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($chk->fetch()) {
                 $db->prepare("DELETE FROM dest_bookmarks WHERE destination_id = :did AND user_id = :uid")->execute([':did' => $did, ':uid' => $_SESSION['user_id']]);
             } else {
-                $db->prepare("INSERT INTO dest_bookmarks (destination_id, user_id, created_at) VALUES (:did, :uid, NOW())")->execute([':did' => $did, ':uid' => $_SESSION['user_id']]);
+                $db->prepare("INSERT INTO dest_bookmarks (destination_id, user_id, created_at) VALUES (:did, :uid, db_now())")->execute([':did' => $did, ':uid' => $_SESSION['user_id']]);
             }
         }
         redirect('/tourist/destination_detail.php?id=' . $destId);

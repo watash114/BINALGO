@@ -121,7 +121,7 @@ class DestinationReview
             $params[":{$key}"] = $value;
         }
 
-        $fields[] = "updated_at = NOW()";
+        $fields[] = "updated_at = db_now()";
         $setClause = implode(', ', $fields);
 
         $stmt = $this->db->prepare("UPDATE destination_reviews SET {$setClause} WHERE id = :id");

@@ -321,7 +321,7 @@ function startPolling() {
     if (pollInterval) clearInterval(pollInterval);
     var cw = <?= $chat_with ?: 0 ?>; if (!cw) return;
     pollInterval = setInterval(function() {
-        fetch('<?= BASE_URL ?>/includes/ajax/poll_messages.php?chat_with='+cw+'&last_id='+lastMsgId+'&t='+Date.now())
+        fetch('<?= BASE_URL ?>/includes/ajax/poll_messages.php?chat_with='+cw+'&last_id='+lastMsgId+'&t='+Date.db_now())
             .then(function(r){return r.json();}).then(function(d){if(d.new_messages&&d.new_messages.length){d.new_messages.forEach(function(m){appendMessage(m);if(m.id>lastMsgId)lastMsgId=m.id;});if(chatEl)chatEl.scrollTop=chatEl.scrollHeight;}}).catch(function(){});
     }, 3000);
 }
