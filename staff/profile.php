@@ -33,7 +33,7 @@ if (is_post() && verify_token($_POST['csrf_token'] ?? null)) {
         if ($existingEmail->fetch()) {
             $error = 'Email address is already in use.';
         } else {
-            $stmt = $db->prepare("UPDATE users SET name = :name, phone = :phone, email = :email, updated_at = db_now() WHERE id = :id");
+            $stmt = $db->prepare("UPDATE users SET name = :name, phone = :phone, email = :email, updated_at = datetime('now') WHERE id = :id");
             $stmt->execute([':name' => $name, ':phone' => $phone, ':email' => $email, ':id' => $user_id]);
 
             if (!empty($_FILES['avatar']['name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
@@ -67,7 +67,7 @@ $stmt = $db->prepare("SELECT COUNT(*) as cnt FROM activity_logs WHERE user_id = 
 $stmt->execute([':uid' => $user_id]);
 $totalActivity = (int) $stmt->fetch()['cnt'];
 
-$stmt = $db->prepare("SELECT COUNT(*) as cnt FROM activity_logs WHERE user_id = :uid AND created_at >= db_date_sub(, 'INTERVAL  ')");
+$stmt = $db->prepare("SELECT COUNT(*) as cnt FROM activity_logs WHERE user_id = :uid AND created_at >= date('now', '-7 days')");
 $stmt->execute([':uid' => $user_id]);
 $weekActivity = (int) $stmt->fetch()['cnt'];
 

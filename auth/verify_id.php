@@ -56,7 +56,7 @@ if (is_post()) {
                     if ($upload_result['success']) {
                         $stmt = $db->prepare(
                             "INSERT INTO id_verifications (user_id, id_type, id_file_path, status, created_at)
-                             VALUES (:uid, :idt, :fp, 'pending', db_now())"
+                             VALUES (:uid, :idt, :fp, 'pending', datetime('now'))"
                         );
                         $stmt->execute([
                             ':uid' => $user_id,

@@ -175,7 +175,7 @@ class Destination
                 :opening_hours, :closing_hours, :category, :difficulty, :capacity_limit, :max_guests,
                 :booking_days, :age_min, :age_max, :accessibility, :rules, :facilities,
                 :entrance_fee, :package_price, :image, :gallery_images, :status, :booking_enabled, :guide_required,
-                :cutoff_hours, :advance_days, :cancellation_policy, :featured, :created_by, db_now())"
+                :cutoff_hours, :advance_days, :cancellation_policy, :featured, :created_by, datetime('now'))"
         );
 
         $stmt->execute([
@@ -227,7 +227,7 @@ class Destination
 
         if (empty($fields)) return false;
 
-        $fields[] = "updated_at = db_now()";
+        $fields[] = "updated_at = datetime('now')";
         $set_clause = implode(', ', $fields);
 
         $stmt = $this->db->prepare("UPDATE destinations SET {$set_clause} WHERE id = :id");
@@ -295,14 +295,14 @@ class Destination
 
     public function toggleFeatured(int $id): bool
     {
-        $stmt = $this->db->prepare("UPDATE destinations SET featured = NOT featured, updated_at = db_now() WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE destinations SET featured = NOT featured, updated_at = datetime('now') WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
     public function toggleStatus(int $id): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE destinations SET status = CASE WHEN status = 'active' THEN 'inactive' ELSE 'active' END, updated_at = db_now() WHERE id = :id"
+            "UPDATE destinations SET status = CASE WHEN status = 'active' THEN 'inactive' ELSE 'active' END, updated_at = datetime('now') WHERE id = :id"
         );
         return $stmt->execute([':id' => $id]);
     }
@@ -310,7 +310,7 @@ class Destination
     public function toggleBooking(int $id): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE destinations SET booking_enabled = NOT booking_enabled, updated_at = db_now() WHERE id = :id"
+            "UPDATE destinations SET booking_enabled = NOT booking_enabled, updated_at = datetime('now') WHERE id = :id"
         );
         return $stmt->execute([':id' => $id]);
     }

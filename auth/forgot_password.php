@@ -30,7 +30,7 @@ if (is_post()) {
             } else {
                 $reset_code = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
                 $db = Database::getInstance()->getConnection();
-                $stmt = $db->prepare("UPDATE users SET reset_token = :token, reset_expires = db_date_add(, 'INTERVAL  ') WHERE email = :email");
+                $stmt = $db->prepare("UPDATE users SET reset_token = :token, reset_expires = datetime('now', '+15 minutes') WHERE email = :email");
                 $stmt->execute([':token' => password_hash($reset_code, PASSWORD_DEFAULT), ':email' => $email]);
 
                 $_SESSION['reset_email'] = $email;

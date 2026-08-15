@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_maya'])) {
 
     if ($existing_payment) {
         $payment_id = $existing_payment['id'];
-        $db->prepare("UPDATE payments SET reference_number = :ref, payment_method = 'maya', payment_status = 'pending', updated_at = db_now() WHERE id = :id")
+        $db->prepare("UPDATE payments SET reference_number = :ref, payment_method = 'maya', payment_status = 'pending', updated_at = datetime('now') WHERE id = :id")
             ->execute([':ref' => $ref, ':id' => $payment_id]);
     } else {
         $payment_id = $paymentModel->create([
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_maya'])) {
     if ($result['success']) {
         ActivityLog::log($user['id'], 'payment_success', "Maya payment of ₱" . number_format($total, 2) . " for booking #{$booking_id}");
 
-        $notif_stmt = $db->prepare("INSERT INTO notifications (user_id, title, message, link, is_read, created_at) VALUES (:uid, :title, :msg, :link, 0, db_now())");
+        $notif_stmt = $db->prepare("INSERT INTO notifications (user_id, title, message, link, is_read, created_at) VALUES (:uid, :title, :msg, :link, 0, datetime('now'))");
         $notif_stmt->execute([
             ':uid'   => $user['id'],
             ':title' => 'Payment Confirmed (Maya)',

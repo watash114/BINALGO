@@ -162,7 +162,7 @@ class Payment
                     payment_status, payment_date, created_at)
              VALUES (:booking_id, :tourist_id, :amount, :tax, :service_fee, :total_amount,
                     :payment_method, :card_last_four, :card_brand, :transaction_id, :reference_number,
-                    :payment_status, :payment_date, db_now())"
+                    :payment_status, :payment_date, datetime('now'))"
         );
 
         $stmt->execute([
@@ -190,9 +190,9 @@ class Payment
         $params = [':id' => $id, ':status' => $status];
 
         if ($status === 'paid') {
-            $fields .= ", payment_date = db_now(), updated_at = db_now()";
+            $fields .= ", payment_date = datetime('now'), updated_at = datetime('now')";
         } else {
-            $fields .= ", updated_at = db_now()";
+            $fields .= ", updated_at = datetime('now')";
         }
 
         if ($transaction_id !== null) {
@@ -214,7 +214,7 @@ class Payment
                 SUM(CASE WHEN payment_status = 'paid' THEN 1 ELSE 0 END) as paid_count,
                 SUM(CASE WHEN payment_status = 'failed' THEN 1 ELSE 0 END) as failed_count,
                 SUM(CASE WHEN payment_status = 'refunded' THEN 1 ELSE 0 END) as refunded_count,
-                SUM(CASE WHEN payment_status = 'paid' AND db_month() = db_month()) THEN total_amount ELSE 0 END) as monthly_revenue
+                SUM(CASE WHEN payment_status = 'paid' AND strftime('%m', created_at) = strftime('%m', 'now') THEN total_amount ELSE 0 END) as monthly_revenue
              FROM payments"
         );
         return $stmt->fetch() ?: [];
@@ -223,12 +223,12 @@ class Payment
     public function getMonthlyRevenue(int $months = 6): array
     {
         $stmt = $this->db->prepare(
-            "SELECT db_date_format(, '') as month,
+            "SELECT strftime('%Y-%m', created_at) as month,
                     SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END) as revenue,
                     COUNT(*) as count
              FROM payments
-             WHERE created_at >= DATE_SUB(db_curdate(), INTERVAL :months MONTH)
-             GROUP BY db_date_format(, '')
+             WHERE created_at >= date('now', '-' || :months || ' months')
+             GROUP BY strftime('%Y-%m', created_at)
              ORDER BY month ASC"
         );
         $stmt->execute([':months' => $months]);
@@ -257,10 +257,10 @@ class Payment
 
         $this->db->beginTransaction();
         try {
-            $this->db->prepare("UPDATE payments SET payment_status = 'paid', payment_date = db_now(), transaction_id = :txn, card_last_four = :four, card_brand = :brand, updated_at = db_now() WHERE id = :id")
+            $this->db->prepare("UPDATE payments SET payment_status = 'paid', payment_date = datetime('now'), transaction_id = :txn, card_last_four = :four, card_brand = :brand, updated_at = datetime('now') WHERE id = :id")
                 ->execute([':txn' => $transaction_id, ':four' => $card_last_four, ':brand' => $card_brand, ':id' => $payment_id]);
 
-            $this->db->prepare("UPDATE bookings SET payment_status = 'paid', status = 'confirmed', updated_at = db_now() WHERE id = :id")
+            $this->db->prepare("UPDATE bookings SET payment_status = 'paid', status = 'confirmed', updated_at = datetime('now') WHERE id = :id")
                 ->execute([':id' => $payment['booking_id']]);
 
             $this->db->prepare("UPDATE schedules SET available_spots = available_spots - :num WHERE id = (SELECT schedule_id FROM bookings WHERE id = :bid)")
@@ -304,10 +304,10 @@ class Payment
 
         $this->db->beginTransaction();
         try {
-            $this->db->prepare("UPDATE payments SET payment_status = 'paid', payment_date = db_now(), transaction_id = :txn, payment_method = 'gcash', updated_at = db_now() WHERE id = :id")
+            $this->db->prepare("UPDATE payments SET payment_status = 'paid', payment_date = datetime('now'), transaction_id = :txn, payment_method = 'gcash', updated_at = datetime('now') WHERE id = :id")
                 ->execute([':txn' => $transaction_id, ':id' => $payment_id]);
 
-            $this->db->prepare("UPDATE bookings SET payment_status = 'paid', status = 'confirmed', updated_at = db_now() WHERE id = :id")
+            $this->db->prepare("UPDATE bookings SET payment_status = 'paid', status = 'confirmed', updated_at = datetime('now') WHERE id = :id")
                 ->execute([':id' => $payment['booking_id']]);
 
             $this->db->prepare("UPDATE schedules SET available_spots = available_spots - :num WHERE id = (SELECT schedule_id FROM bookings WHERE id = :bid)")
@@ -349,10 +349,10 @@ class Payment
 
         $this->db->beginTransaction();
         try {
-            $this->db->prepare("UPDATE payments SET payment_status = 'paid', payment_date = db_now(), transaction_id = :txn, payment_method = 'maya', updated_at = db_now() WHERE id = :id")
+            $this->db->prepare("UPDATE payments SET payment_status = 'paid', payment_date = datetime('now'), transaction_id = :txn, payment_method = 'maya', updated_at = datetime('now') WHERE id = :id")
                 ->execute([':txn' => $transaction_id, ':id' => $payment_id]);
 
-            $this->db->prepare("UPDATE bookings SET payment_status = 'paid', status = 'confirmed', updated_at = db_now() WHERE id = :id")
+            $this->db->prepare("UPDATE bookings SET payment_status = 'paid', status = 'confirmed', updated_at = datetime('now') WHERE id = :id")
                 ->execute([':id' => $payment['booking_id']]);
 
             $this->db->prepare("UPDATE schedules SET available_spots = available_spots - :num WHERE id = (SELECT schedule_id FROM bookings WHERE id = :bid)")
@@ -401,7 +401,7 @@ class Payment
 
             $payout_stmt = $this->db->prepare(
                 "INSERT INTO guide_payouts (guide_id, booking_id, payment_id, tour_amount, commission_rate, commission_amount, net_earning, payout_status, created_at)
-                 VALUES (:gid, :bid, :pid, :amount, :rate, :commission, :net, 'pending', db_now())"
+                 VALUES (:gid, :bid, :pid, :amount, :rate, :commission, :net, 'pending', datetime('now'))"
             );
             $payout_stmt->execute([
                 ':gid'        => $booking_data['guide_id'],

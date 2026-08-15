@@ -111,7 +111,7 @@ function login(string $email, string $password): array
     $os = get_client_os();
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
     try {
-        $db->prepare("UPDATE users SET last_login_ip = :ip, last_active_ip = :ip2, last_login_at = db_now(), login_count = login_count + 1, last_user_agent = :ua WHERE id = :uid")
+        $db->prepare("UPDATE users SET last_login_ip = :ip, last_active_ip = :ip2, last_login_at = datetime('now'), login_count = login_count + 1, last_user_agent = :ua WHERE id = :uid")
             ->execute([':ip' => $login_ip, ':ip2' => $login_ip, ':ua' => $ua, ':uid' => $user['id']]);
     } catch (\PDOException $e) {
         error_log("Login audit update failed: " . $e->getMessage());

@@ -50,7 +50,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     $stmt = $db->prepare(
         "SELECT u.*, COALESCE(a.cnt, 0) as activity_7d
          FROM users u
-         LEFT JOIN (SELECT user_id, COUNT(*) cnt FROM activity_logs WHERE created_at >= db_date_sub(, 'INTERVAL  ') GROUP BY user_id) a ON a.user_id = u.id
+         LEFT JOIN (SELECT user_id, COUNT(*) cnt FROM activity_logs WHERE created_at >= date('now', '-7 days') GROUP BY user_id) a ON a.user_id = u.id
          $whereClause ORDER BY u.name ASC LIMIT $perPage OFFSET $offset"
     );
     $stmt->execute($params);

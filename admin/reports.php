@@ -13,24 +13,24 @@ $totalEvents = (int) $db->query("SELECT COUNT(*) FROM events WHERE status = 'pub
 $avgRating = (float) $db->query("SELECT COALESCE(AVG(overall_rating), 0) FROM feedback")->fetchColumn();
 $pendingVerifications = (int) $db->query("SELECT COUNT(*) FROM id_verifications WHERE status = 'pending'")->fetchColumn();
 $totalRevenuePaid = (float) $db->query("SELECT COALESCE(SUM(total_amount), 0) FROM payments WHERE payment_status = 'paid'")->fetchColumn();
-$monthlyRevenue = (float) $db->query("SELECT COALESCE(SUM(total_amount), 0) FROM payments WHERE payment_status = 'paid' AND created_at >= db_date_format(, '')")->fetchColumn();
+$monthlyRevenue = (float) $db->query("SELECT COALESCE(SUM(total_amount), 0) FROM payments WHERE payment_status = 'paid' AND created_at >= date('now', 'start of month')")->fetchColumn();
 
 $bookingsByMonth = $db->query(
-    "SELECT db_date_format(, '') as month, COUNT(*) as count,
+    "SELECT strftime('%Y-%m', b.created_at) as month, COUNT(*) as count,
             SUM(CASE WHEN b.status IN ('confirmed','completed') THEN b.total_price ELSE 0 END) as revenue
      FROM bookings b
-     WHERE b.created_at >= db_date_sub(, 'INTERVAL  ')
-     GROUP BY db_date_format(, '')
+     WHERE b.created_at >= date('now', '-6 months')
+     GROUP BY strftime('%Y-%m', b.created_at)
      ORDER BY month ASC"
 )->fetchAll();
 
 $revenueByMonth = $db->query(
-    "SELECT db_date_format(, '') as month,
+    "SELECT strftime('%Y-%m', created_at) as month,
             SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END) as revenue,
             SUM(CASE WHEN payment_status = 'paid' THEN 1 ELSE 0 END) as count
      FROM payments
-     WHERE created_at >= db_date_sub(, 'INTERVAL  ')
-     GROUP BY db_date_format(, '')
+     WHERE created_at >= date('now', '-6 months')
+     GROUP BY strftime('%Y-%m', created_at)
      ORDER BY month ASC"
 )->fetchAll();
 
@@ -46,10 +46,10 @@ $popularDestinations = $db->query(
 )->fetchAll();
 
 $usersByMonth = $db->query(
-    "SELECT db_date_format(, '') as month, COUNT(*) as count
+    "SELECT strftime('%Y-%m', created_at) as month, COUNT(*) as count
      FROM users
-     WHERE created_at >= db_date_sub(, 'INTERVAL  ')
-     GROUP BY db_date_format(, '')
+     WHERE created_at >= date('now', '-6 months')
+     GROUP BY strftime('%Y-%m', created_at)
      ORDER BY month ASC"
 )->fetchAll();
 

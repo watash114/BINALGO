@@ -29,7 +29,7 @@ $schedules = $db->prepare(
     "SELECT s.*,
             (SELECT COUNT(*) FROM bookings b WHERE b.schedule_id = s.id AND b.status IN ('confirmed','pending')) as booked
      FROM schedules s
-     WHERE s.event_id = :eid AND s.status = 'scheduled' AND s.start_date >= db_curdate()
+     WHERE s.event_id = :eid AND s.status = 'scheduled' AND s.start_date >= date('now')
      ORDER BY s.start_date ASC, s.start_time ASC"
 );
 $schedules->execute([':eid' => $event_id]);
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_event'])) {
 
     $insert = $db->prepare(
         "INSERT INTO bookings (booking_reference, tourist_id, schedule_id, destination_id, full_name, email, contact_number, num_participants, total_price, service_fee, payment_method, status, payment_status, special_requests, created_at)
-         VALUES (:ref, :uid, :sid, :did, :fname, :email, :phone, :num, :total, :sfee, :pmethod, 'pending', 'unpaid', :req, db_now())"
+         VALUES (:ref, :uid, :sid, :did, :fname, :email, :phone, :num, :total, :sfee, :pmethod, 'pending', 'unpaid', :req, datetime('now'))"
     );
     $insert->execute([
         ':ref' => $ref, ':uid' => $_SESSION['user_id'], ':sid' => $schedule_id,

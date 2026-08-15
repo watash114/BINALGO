@@ -73,7 +73,7 @@ if (is_post()) {
                 if (!empty($_FILES['government_id']['name'])) {
                     $upload = upload_file($_FILES['government_id'], 'ids', ['jpg', 'jpeg', 'png', 'pdf']);
                     if ($upload['success']) {
-                        $db->prepare("INSERT INTO id_verifications (user_id, id_type, id_file_path, status, created_at) VALUES (:uid, :it, :dp, 'pending', db_now())")
+                        $db->prepare("INSERT INTO id_verifications (user_id, id_type, id_file_path, status, created_at) VALUES (:uid, :it, :dp, 'pending', datetime('now'))")
                             ->execute([':uid' => $uid, ':it' => $old['id_type'], ':dp' => $upload['filename']]);
                     }
                 }

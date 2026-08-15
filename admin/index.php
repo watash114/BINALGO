@@ -49,10 +49,10 @@ $bookingByStatus = $db->query(
 )->fetchAll(PDO::FETCH_KEY_PAIR);
 
 $bookingByMonth = $db->query(
-    "SELECT db_date_format(, '') as month, COUNT(*) as cnt
+    "SELECT strftime('%Y-%m', created_at) as month, COUNT(*) as cnt
      FROM bookings
-     WHERE created_at >= db_date_sub(, 'INTERVAL  ')
-     GROUP BY db_date_format(, '')
+     WHERE created_at >= date('now', '-6 months')
+     GROUP BY strftime('%Y-%m', created_at)
      ORDER BY month ASC"
 )->fetchAll();
 
@@ -75,11 +75,11 @@ $paymentByMethod = $db->query(
 )->fetchAll();
 
 $revenueByMonth = $db->query(
-    "SELECT db_date_format(, '') as month,
+    "SELECT strftime('%Y-%m', created_at) as month,
             SUM(total_amount) as revenue
      FROM payments
-     WHERE payment_status = 'paid' AND created_at >= db_date_sub(, 'INTERVAL  ')
-     GROUP BY db_date_format(, '')
+     WHERE payment_status = 'paid' AND created_at >= date('now', '-6 months')
+     GROUP BY strftime('%Y-%m', created_at)
      ORDER BY month ASC"
 )->fetchAll();
 
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'approve_verification' && isset($_POST['verification_id'])) {
         $vid = (int) $_POST['verification_id'];
-        $stmt = $db->prepare("UPDATE id_verifications SET status = 'approved', verified_at = db_now(), verified_by = :uid WHERE id = :id");
+        $stmt = $db->prepare("UPDATE id_verifications SET status = 'approved', verified_at = datetime('now'), verified_by = :uid WHERE id = :id");
         $stmt->execute([':id' => $vid, ':uid' => $_SESSION['user_id']]);
         flash_message('success', 'Verification approved.');
         redirect('/admin/index.php');
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'reject_verification' && isset($_POST['verification_id'])) {
         $vid = (int) $_POST['verification_id'];
-        $stmt = $db->prepare("UPDATE id_verifications SET status = 'rejected', verified_at = db_now(), verified_by = :uid WHERE id = :id");
+        $stmt = $db->prepare("UPDATE id_verifications SET status = 'rejected', verified_at = datetime('now'), verified_by = :uid WHERE id = :id");
         $stmt->execute([':id' => $vid, ':uid' => $_SESSION['user_id']]);
         flash_message('success', 'Verification rejected.');
         redirect('/admin/index.php');

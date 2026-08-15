@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
 
     $insert_stmt = $db->prepare(
         "INSERT INTO bookings (booking_reference, tourist_id, schedule_id, full_name, email, contact_number, num_participants, total_price, service_fee, payment_method, status, payment_status, special_requests, created_at)
-         VALUES (:ref, :tourist_id, :schedule_id, :full_name, :email, :contact_number, :num_participants, :total_price, :service_fee, :payment_method, 'pending', 'unpaid', :special_requests, db_now())"
+         VALUES (:ref, :tourist_id, :schedule_id, :full_name, :email, :contact_number, :num_participants, :total_price, :service_fee, :payment_method, 'pending', 'unpaid', :special_requests, datetime('now'))"
     );
     $insert_stmt->execute([
         ':ref' => $ref,
@@ -115,7 +115,7 @@ $sort = $_GET['sort'] ?? 'date_asc';
 $page = max(1, (int)($_GET['page'] ?? 1));
 $per_page = 9;
 
-$where = ["s.status = 'scheduled'", "s.start_date >= db_curdate()", "e.status = 'published'", "d.status = 'active'"];
+$where = ["s.status = 'scheduled'", "s.start_date >= date('now')", "e.status = 'published'", "d.status = 'active'"];
 $params = [];
 
 if ($search !== '') {

@@ -109,7 +109,7 @@ class User
             return false;
         }
 
-        $fields[] = "updated_at = db_now()";
+        $fields[] = "updated_at = datetime('now')";
         $set_clause = implode(', ', $fields);
 
         $stmt = $this->db->prepare("UPDATE users SET {$set_clause} WHERE id = :id");
@@ -176,7 +176,7 @@ class User
             return false;
         }
 
-        $stmt = $this->db->prepare("UPDATE users SET status = :status, updated_at = db_now() WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE users SET status = :status, updated_at = datetime('now') WHERE id = :id");
         return $stmt->execute([':status' => $status, ':id' => $id]);
     }
 }

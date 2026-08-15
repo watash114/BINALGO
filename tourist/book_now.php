@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $insert = $db->prepare(
                 "INSERT INTO bookings (booking_reference, tourist_id, destination_id, schedule_id, full_name, email, contact_number, visit_date, visit_time, num_participants, total_price, service_fee, payment_method, status, payment_status, special_requests, created_at)
-                 VALUES (:ref, :uid, :did, NULL, :fname, :email, :phone, :vdate, :vtime, :num, :total, :sfee, :pmethod, 'pending', 'unpaid', :req, db_now())"
+                 VALUES (:ref, :uid, :did, NULL, :fname, :email, :phone, :vdate, :vtime, :num, :total, :sfee, :pmethod, 'pending', 'unpaid', :req, datetime('now'))"
             );
             $insert->execute([
                 ':ref'   => $ref,

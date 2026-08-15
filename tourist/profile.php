@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('/tourist/profile.php');
         }
 
-        $db->prepare("UPDATE users SET name = :name, gender = :gender, age = :age, phone = :phone, updated_at = db_now() WHERE id = :uid")
+        $db->prepare("UPDATE users SET name = :name, gender = :gender, age = :age, phone = :phone, updated_at = datetime('now') WHERE id = :uid")
             ->execute([':name' => $name, ':gender' => $gender, ':age' => $age, ':phone' => $phone, ':uid' => $user_id]);
 
         $tp_check = $db->prepare("SELECT id FROM tourist_profiles WHERE user_id = :uid");
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-        $db->prepare("UPDATE users SET password = :pw, updated_at = db_now() WHERE id = :uid")
+        $db->prepare("UPDATE users SET password = :pw, updated_at = datetime('now') WHERE id = :uid")
             ->execute([':pw' => $hashed, ':uid' => $user_id]);
 
         ActivityLog::log($user_id, 'password_changed', 'Password changed');
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('/tourist/profile.php');
         }
 
-        $db->prepare("INSERT INTO id_verifications (user_id, id_type, id_file_path, status, created_at) VALUES (:uid, :type, :path, 'pending', db_now())")
+        $db->prepare("INSERT INTO id_verifications (user_id, id_type, id_file_path, status, created_at) VALUES (:uid, :type, :path, 'pending', datetime('now'))")
             ->execute([':uid' => $user_id, ':type' => $id_type, ':path' => $upload['path']]);
 
         ActivityLog::log($user_id, 'id_verification_submitted', "ID verification submitted: {$id_type}");

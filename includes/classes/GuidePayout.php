@@ -158,14 +158,14 @@ class GuidePayout
     public function getMonthlyEarnings(int $guide_id, int $months = 6): array
     {
         $stmt = $this->db->prepare(
-            "SELECT db_date_format(, '') as month,
+            "SELECT strftime('%Y-%m', gp.created_at) as month,
                     SUM(CASE WHEN gp.payout_status = 'paid' THEN gp.net_earning ELSE 0 END) as earned,
                     SUM(CASE WHEN gp.payout_status IN ('pending','approved') THEN gp.net_earning ELSE 0 END) as pending,
                     COUNT(*) as tours
              FROM guide_payouts gp
              WHERE gp.guide_id = :gid
-               AND gp.created_at >= DATE_SUB(db_curdate(), INTERVAL :months MONTH)
-             GROUP BY db_date_format(, '')
+               AND gp.created_at >= date('now', '-' || :months || ' months')
+             GROUP BY strftime('%Y-%m', gp.created_at)
              ORDER BY month ASC"
         );
         $stmt->execute([':gid' => $guide_id, ':months' => $months]);
@@ -175,7 +175,7 @@ class GuidePayout
     public function approve(int $payout_id, int $admin_id): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE guide_payouts SET payout_status = 'approved', approved_by = :admin, approved_at = db_now(), updated_at = db_now()
+            "UPDATE guide_payouts SET payout_status = 'approved', approved_by = :admin, approved_at = datetime('now'), updated_at = datetime('now')
              WHERE id = :id AND payout_status = 'pending'"
         );
         return $stmt->execute([':admin' => $admin_id, ':id' => $payout_id]);
@@ -195,7 +195,7 @@ class GuidePayout
     public function markPaid(int $payout_id, string $reference): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE guide_payouts SET payout_status = 'paid', paid_at = db_now(), payout_reference = :ref, updated_at = db_now()
+            "UPDATE guide_payouts SET payout_status = 'paid', paid_at = datetime('now'), payout_reference = :ref, updated_at = datetime('now')
              WHERE id = :id AND payout_status = 'approved'"
         );
         return $stmt->execute([':ref' => $reference, ':id' => $payout_id]);

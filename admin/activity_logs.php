@@ -80,11 +80,11 @@ function logs_stats(PDO $db): array
 {
     return [
         'total'   => (int)$db->query("SELECT COUNT(*) FROM activity_logs")->fetchColumn(),
-        'today'   => (int)$db->query("SELECT COUNT(*) FROM activity_logs WHERE DATE(created_at) = db_curdate()")->fetchColumn(),
-        'week'    => (int)$db->query("SELECT COUNT(*) FROM activity_logs WHERE created_at >= db_date_sub(, 'INTERVAL  ')")->fetchColumn(),
+        'today'   => (int)$db->query("SELECT COUNT(*) FROM activity_logs WHERE DATE(created_at) = date('now')")->fetchColumn(),
+        'week'    => (int)$db->query("SELECT COUNT(*) FROM activity_logs WHERE created_at >= date('now', '-7 days')")->fetchColumn(),
         'users'   => (int)$db->query("SELECT COUNT(DISTINCT user_id) FROM activity_logs")->fetchColumn(),
         'actions' => (int)$db->query("SELECT COUNT(DISTINCT action) FROM activity_logs")->fetchColumn(),
-        'old'     => (int)$db->query("SELECT COUNT(*) FROM activity_logs WHERE created_at < db_date_sub(, 'INTERVAL  ')")->fetchColumn(),
+        'old'     => (int)$db->query("SELECT COUNT(*) FROM activity_logs WHERE created_at < date('now', '-90 days')")->fetchColumn(),
     ];
 }
 
@@ -204,7 +204,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     }
 
     if ($action === 'clear_old_logs') {
-        $stmt = $db->prepare("DELETE FROM activity_logs WHERE created_at < db_date_sub(, 'INTERVAL  ')");
+        $stmt = $db->prepare("DELETE FROM activity_logs WHERE created_at < date('now', '-90 days')");
         $stmt->execute();
         $deleted = $stmt->rowCount();
         ActivityLog::log($_SESSION['user_id'], 'logs_clear', "Cleared {$deleted} logs older than 90 days");
@@ -366,7 +366,7 @@ function timeAgo(d) {
     if (!d) return '—';
     const dt = new Date(d.replace(' ', 'T'));
     if (isNaN(dt)) return d;
-    const s = Math.floor((Date.db_now() - dt) / 1000);
+    const s = Math.floor((Date.datetime('now') - dt) / 1000);
     if (s < 60) return 'just now';
     const m = Math.floor(s / 60); if (m < 60) return m + 'm ago';
     const h = Math.floor(m / 60); if (h < 24) return h + 'h ago';
