@@ -543,7 +543,7 @@ $_profile_url = BASE_URL . '/' . $sidebar_role . '/profile.php';
 <aside class="app-sidebar" id="appSidebar">
     <a href="<?= $_sidebar_links[0]['url'] ?>" class="sidebar-brand" data-tip="BINALGO">
         <div class="sidebar-brand-icon">
-            <i class="fas fa-map-location-dot"></i>
+            <img src="<?= BASE_URL ?>/assets/images/binalgo-logo.svg" alt="BINALGO" style="width:32px;height:32px;border-radius:6px;">
         </div>
         <span class="sidebar-brand-text">BINALGO</span>
     </a>
