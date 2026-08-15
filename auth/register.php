@@ -141,7 +141,7 @@ if (is_post()) {
                 </div>
             </div>
 
-            <div class="row g-3 mb-3">
+            <div class="row g-3 mb-3 align-items-start">
                 <div class="col-md-6">
                     <div class="auth-input-group">
                         <label for="gender" class="auth-input-label"><i class="fas fa-venus-mars"></i>Gender <span class="text-danger">*</span></label>
@@ -206,7 +206,7 @@ if (is_post()) {
                 </div>
             </div>
 
-            <div class="row g-3 mb-3">
+            <div class="row g-3 mb-3 align-items-start">
                 <div class="col-md-6">
                     <div class="auth-input-group">
                         <label for="password" class="auth-input-label"><i class="fas fa-lock"></i>Password <span class="text-danger">*</span></label>
