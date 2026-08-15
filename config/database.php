@@ -51,6 +51,7 @@ class Database
                     }
                 }
                 $this->migrate();
+                $this->seed();
             }
         } catch (PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
@@ -103,6 +104,21 @@ class Database
                     }
                     $pending = '';
                 }
+        }
+    }
+
+    private function seed(): void
+    {
+        $adminEmail = 'admin@tourism.com';
+        $stmt = $this->connection->prepare("SELECT COUNT(*) FROM users WHERE email = :email");
+        $stmt->execute([':email' => $adminEmail]);
+        if ((int)$stmt->fetchColumn() === 0) {
+            $hash = password_hash('admin123', PASSWORD_DEFAULT);
+            $this->connection->prepare(
+                "INSERT INTO users (username, email, password, role, name, gender, age, phone, status, created_at)
+                 VALUES (:uname, :email, :pw, 'admin', 'Administrator', 'male', 30, '09123456789', 'active', datetime('now'))"
+            )->execute([':uname' => 'admin', ':email' => $adminEmail, ':pw' => $hash]);
+            error_log("Seeded admin user: {$adminEmail}");
         }
     }
 

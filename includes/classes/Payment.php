@@ -158,10 +158,10 @@ class Payment
     {
         $stmt = $this->db->prepare(
             "INSERT INTO payments (booking_id, tourist_id, amount, tax, service_fee, total_amount,
-                    payment_method, card_last_four, card_brand, transaction_id, reference_number,
+                    method, payment_method, card_last_four, card_brand, transaction_id, reference_number,
                     payment_status, payment_date, created_at)
              VALUES (:booking_id, :tourist_id, :amount, :tax, :service_fee, :total_amount,
-                    :payment_method, :card_last_four, :card_brand, :transaction_id, :reference_number,
+                    :method, :payment_method, :card_last_four, :card_brand, :transaction_id, :reference_number,
                     :payment_status, :payment_date, datetime('now'))"
         );
 
@@ -172,6 +172,7 @@ class Payment
             ':tax'              => $data['tax'] ?? 0,
             ':service_fee'      => $data['service_fee'] ?? 0,
             ':total_amount'     => $data['total_amount'],
+            ':method'           => $data['payment_method'] ?? 'card',
             ':payment_method'   => $data['payment_method'] ?? 'card',
             ':card_last_four'   => $data['card_last_four'] ?? null,
             ':card_brand'       => $data['card_brand'] ?? null,

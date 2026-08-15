@@ -467,7 +467,7 @@ async function load() {
     $('#staffBody').innerHTML = skeletonRows(5);
     state.loading = true;
     try {
-        const r = await fetch('/Tourism/admin/staff.php?ajax=1&' + qs());
+        const r = await fetch(baseUrl + '/admin/staff.php?ajax=1&' + qs());
         const d = await r.json();
         state.total = d.total; state.pages = d.pages; state.page = d.page;
         applyStats(d.stats);
@@ -502,7 +502,7 @@ function renderChips() {
 function post(data, cb) {
     const fd = new FormData();
     Object.keys(data).forEach(k => fd.append(k, data[k]));
-    fetch('/Tourism/admin/staff.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    fetch(baseUrl + '/admin/staff.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
         .then(r => r.json()).then(d => cb(d.ok, d.message, d)).catch(() => cb(false, 'Request failed.'));
 }
 function askConfirm(title, msg, fn) {

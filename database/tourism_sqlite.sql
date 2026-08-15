@@ -12,6 +12,13 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(20) NOT NULL,
     avatar VARCHAR(500) NULL,
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('active','inactive','suspended','pending')),
+    last_login_at DATETIME NULL,
+    last_login_ip VARCHAR(45) NULL,
+    last_active_ip VARCHAR(45) NULL,
+    login_count INTEGER DEFAULT 0,
+    last_user_agent TEXT NULL,
+    reset_token VARCHAR(255) NULL,
+    reset_expires DATETIME NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -293,6 +300,29 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_id INTEGER NOT NULL,
+    tourist_id INTEGER NULL,
+    amount REAL NOT NULL DEFAULT 0,
+    tax REAL DEFAULT 0,
+    service_fee REAL DEFAULT 0,
+    total_amount REAL NOT NULL DEFAULT 0,
+    method VARCHAR(50) NOT NULL DEFAULT 'card',
+    payment_method VARCHAR(50) DEFAULT 'card',
+    card_last_four VARCHAR(4) NULL,
+    card_brand VARCHAR(50) NULL,
+    reference VARCHAR(255) NULL,
+    reference_number VARCHAR(100) NULL,
+    transaction_id VARCHAR(255) NULL,
+    payment_status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','completed','failed','refunded')),
+    payment_date DATETIME NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS guide_payouts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     guide_id INTEGER NOT NULL,
@@ -317,29 +347,6 @@ CREATE TABLE IF NOT EXISTS guide_payouts (
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL,
     FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE SET NULL,
     FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
-);
-
-CREATE TABLE IF NOT EXISTS payments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    booking_id INTEGER NOT NULL,
-    tourist_id INTEGER NULL,
-    amount REAL NOT NULL DEFAULT 0,
-    tax REAL DEFAULT 0,
-    service_fee REAL DEFAULT 0,
-    total_amount REAL NOT NULL DEFAULT 0,
-    method VARCHAR(50) NOT NULL,
-    payment_method VARCHAR(50) DEFAULT 'card',
-    card_last_four VARCHAR(4) NULL,
-    card_brand VARCHAR(50) NULL,
-    reference VARCHAR(255) NULL,
-    reference_number VARCHAR(100) NULL,
-    transaction_id VARCHAR(255) NULL,
-    payment_status VARCHAR(20) NOT NULL DEFAULT 'pending',
-    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','completed','failed','refunded')),
-    payment_date DATETIME NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS calls (

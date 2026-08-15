@@ -376,7 +376,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 }
 
 $stats = users_page_stats($db);
-$exportUrl = '/Tourism/admin/users.php?export=csv' . ($roleFilter ? '&role=' . urlencode($roleFilter) : '') . ($statusFilter ? '&status=' . urlencode($statusFilter) : '') . ($search ? '&search=' . urlencode($search) : '');
+$exportUrl = BASE_URL . '/admin/users.php?export=csv' . ($roleFilter ? '&role=' . urlencode($roleFilter) : '') . ($statusFilter ? '&status=' . urlencode($statusFilter) : '') . ($search ? '&search=' . urlencode($search) : '');
 
 render_page('admin', 'users.php', 'User Management', function () use ($stats, $search, $roleFilter, $statusFilter, $csrf, $exportUrl) {
 
@@ -783,7 +783,7 @@ async function load() {
     body.innerHTML = skeletonRows(state.per_page);
     state.loading = true;
     try {
-        const res = await fetch('/Tourism/admin/users.php?ajax=1&' + qs());
+        const res = await fetch(baseUrl + '/admin/users.php?ajax=1&' + qs());
         const d = await res.json();
         state.total = d.total; state.pages = d.pages; state.page = d.page; state.per_page = d.per_page;
         applyStats(d.stats);
@@ -947,7 +947,7 @@ function post(data, cb) {
         if (Array.isArray(data[k])) data[k].forEach(v => fd.append(k, v));
         else fd.append(k, data[k]);
     });
-    fetch('/Tourism/admin/users.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    fetch(baseUrl + '/admin/users.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
         .then(r => r.json()).then(d => cb(d.ok, d.message, d)).catch(() => cb(false, 'Request failed.'));
 }
 
@@ -1025,7 +1025,7 @@ function buildSecurity(u) {
 }
 async function fetchProfileActivity(id) {
     try {
-        const r = await fetch('/Tourism/admin/users.php?ajax=1&mode=activity&user_id=' + id);
+        const r = await fetch(baseUrl + '/admin/users.php?ajax=1&mode=activity&user_id=' + id);
         const d = await r.json();
         if (!d.activity || !d.activity.length) {
             $('#profActivity').innerHTML = '<div class="text-center text-muted py-4"><i class="fa-solid fa-clock-rotate-left d-block mb-2"></i>No recent activity.</div>';
@@ -1148,7 +1148,7 @@ function saveUser() {
     fd.append('gender', $('#f_gender').value); fd.append('age', $('#f_age').value);
     fd.append('phone', $('#f_phone').value.trim());
     if ($('#f_avatar').files[0]) fd.append('user_avatar', $('#f_avatar').files[0]);
-    fetch('/Tourism/admin/users.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    fetch(baseUrl + '/admin/users.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
         .then(r => r.json()).then(d => {
             toast(d.message, d.ok ? 'success' : 'error');
             if (d.ok) {

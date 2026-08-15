@@ -181,7 +181,7 @@ if ($filter_search !== '') {
 $where_clause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
 // Group history by broadcast batch so multi-recipient sends show as one item.
-$group_expr = "COALESCE(n.batch_id, CONCAT('single_', n.id))";
+$group_expr = "COALESCE(n.batch_id, 'single_' || n.id)";
 
 $count_stmt = $db->prepare("SELECT COUNT(DISTINCT {$group_expr}) as cnt FROM notifications n {$where_clause}");
 $count_stmt->execute($params);

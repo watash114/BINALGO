@@ -881,7 +881,7 @@ async function load() {
     $('#destBody').innerHTML = skeletonRows(5);
     state.loading = true;
     try {
-        const r = await fetch('/Tourism/admin/destinations.php?ajax=1&' + qs());
+        const r = await fetch(baseUrl + '/admin/destinations.php?ajax=1&' + qs());
         const d = await r.json();
         state.total = d.total; state.pages = d.pages; state.page = d.page; state.per_page = d.per_page;
         applyStats(d.stats);
@@ -922,7 +922,7 @@ function post(data, cb) {
         if (Array.isArray(data[k])) data[k].forEach(v => fd.append(k, v));
         else fd.append(k, data[k]);
     });
-    fetch('/Tourism/admin/destinations.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    fetch(baseUrl + '/admin/destinations.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
         .then(r => r.json()).then(d => cb(d.ok, d.message)).catch(() => cb(false, 'Request failed.'));
 }
 function askConfirm(title, msg, fn) {
@@ -979,7 +979,7 @@ async function openEdit(id) {
     $('#editDestBody').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-brand"></div></div>';
     bootstrap.Modal.getOrCreateInstance($('#editDestModal')).show();
     try {
-        const r = await fetch('/Tourism/admin/destinations.php?ajax=1&mode=form&id=' + id);
+        const r = await fetch(baseUrl + '/admin/destinations.php?ajax=1&mode=form&id=' + id);
         const j = await r.json();
         if (j.ok) $('#editDestBody').innerHTML = j.html;
         else { $('#editDestBody').innerHTML = '<div class="text-center text-danger py-5">' + esc(j.message || 'Failed to load form.') + '</div>'; }

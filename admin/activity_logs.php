@@ -406,7 +406,7 @@ function qs() {
     return p.toString();
 }
 function exportLogs(fmt) {
-    window.location.href = '/Tourism/admin/activity_logs.php?export=' + fmt + '&' + qs();
+    window.location.href = baseUrl + '/admin/activity_logs.php?export=' + fmt + '&' + qs();
 }
 function skeletonRows(n) {
     let h = '';
@@ -469,7 +469,7 @@ async function load() {
     $('#logsBody').innerHTML = skeletonRows(10);
     state.loading = true;
     try {
-        const r = await fetch('/Tourism/admin/activity_logs.php?ajax=1&' + qs());
+        const r = await fetch(baseUrl + '/admin/activity_logs.php?ajax=1&' + qs());
         const d = await r.json();
         state.total = d.total; state.pages = d.pages; state.page = d.page; state.per_page = d.per_page;
         applyStats(d.stats);
@@ -507,7 +507,7 @@ function renderChips() {
 function post(data, cb) {
     const fd = new FormData();
     Object.keys(data).forEach(k => fd.append(k, data[k]));
-    fetch('/Tourism/admin/activity_logs.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    fetch(baseUrl + '/admin/activity_logs.php', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
         .then(r => r.json()).then(d => cb(d.ok, d.message)).catch(() => cb(false, 'Request failed.'));
 }
 function askConfirm(title, msg, fn) {
