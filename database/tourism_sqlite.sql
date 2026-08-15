@@ -246,20 +246,43 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 CREATE TABLE IF NOT EXISTS guide_payouts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     guide_id INTEGER NOT NULL,
+    booking_id INTEGER NULL,
+    payment_id INTEGER NULL,
     amount REAL NOT NULL DEFAULT 0,
-    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','paid','rejected')),
+    commission_amount REAL DEFAULT 0,
+    net_earning REAL DEFAULT 0,
+    payout_status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (payout_status IN ('pending','approved','paid','rejected')),
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','paid','rejected')),
+    reference_number VARCHAR(100) NULL,
     notes TEXT NULL,
+    approved_by INTEGER NULL,
+    approved_at DATETIME NULL,
+    paid_at DATETIME NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (guide_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (guide_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL,
+    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE SET NULL,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS payments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     booking_id INTEGER NOT NULL,
+    tourist_id INTEGER NULL,
     amount REAL NOT NULL DEFAULT 0,
+    tax REAL DEFAULT 0,
+    service_fee REAL DEFAULT 0,
+    total_amount REAL NOT NULL DEFAULT 0,
     method VARCHAR(50) NOT NULL,
+    payment_method VARCHAR(50) DEFAULT 'card',
+    card_last_four VARCHAR(4) NULL,
+    card_brand VARCHAR(50) NULL,
     reference VARCHAR(255) NULL,
+    reference_number VARCHAR(100) NULL,
+    transaction_id VARCHAR(255) NULL,
+    payment_status VARCHAR(20) NOT NULL DEFAULT 'pending',
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','completed','failed','refunded')),
+    payment_date DATETIME NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
 );
