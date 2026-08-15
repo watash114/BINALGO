@@ -169,19 +169,6 @@
 .auth-input-group {
   margin-bottom: 16px;
 }
-.row.g-3 .col-md-6 {
-  display: flex;
-  flex-direction: column;
-}
-.row.g-3 .col-md-6 > .auth-input-group {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.row.g-3 .col-md-6 > .auth-input-group > .auth-input-wrap,
-.row.g-3 .col-md-6 > .auth-input-group > .auth-select-wrap {
-  flex: 1;
-}
 .auth-input-label {
   display: flex;
   align-items: center;
@@ -192,6 +179,7 @@
   margin-bottom: 8px;
   min-height: 22px;
   line-height: 1.2;
+  white-space: nowrap;
   transition: color 0.2s ease;
 }
 .auth-input-label i {
