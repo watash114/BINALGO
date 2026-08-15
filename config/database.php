@@ -18,7 +18,7 @@ class Database
             $dbHost = getenv('DB_HOST');
             $dbName = getenv('DB_NAME');
 
-            if ($dbHost && $dbName) {
+            if ($dbHost && $dbName && defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
                 $dbUser = getenv('DB_USER') ?: 'root';
                 $dbPass = getenv('DB_PASS') ?: '';
                 $dbPort = getenv('DB_PORT') ?: '3306';
